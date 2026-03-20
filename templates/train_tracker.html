@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Train Tracker - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Government Header with Tricolor -->
+    <div class="gov-header"></div>
+    
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-top">
+            <div class="container">
+                <div class="header-top-content">
+                    <div class="header-links">
+                        <a href="#">Skip to main content</a>
+                        <a href="#">Screen Reader Access</a>
+                    </div>
+                    <div class="header-links">
+                        <a href="#">हिंदी</a>
+                        <a href="/user_dashboard">Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header-main">
+            <div class="container">
+                <div class="header-content">
+                    <div class="emblem"></div>
+                    <div class="title-section">
+                        <h1>Live Train Tracker</h1>
+                        <div class="subtitle">लाइव ट्रेन ट्रैकर</div>
+                        <div class="ministry">Ministry of Railways, Government of India</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="gov-nav">
+        <div class="container">
+            <div class="nav-content">
+                <ul class="nav-menu">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/user_dashboard">Dashboard</a></li>
+                    <li><a href="/train_tracker" class="active">Track Train</a></li>
+                    <li><a href="/emergency">Emergency</a></li>
+                </ul>
+                <div class="user-portal">
+                    Live Tracking
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Search Section -->
+            <div class="page-title">
+                <h2>🚂 Real-Time Train Location Tracker</h2>
+                <p>Enter your train number to get live location and status updates</p>
+            </div>
+
+            <!-- Train Search Form -->
+            <div class="gov-form" style="max-width: 500px; margin-bottom: 30px;">
+                <div class="form-group">
+                    <label class="form-label" for="trainNumber">Train Number / ट्रेन नंबर</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="trainNumber" class="form-control" placeholder="Enter train number (e.g., 12797)" style="flex: 1;">
+                        <button id="trackBtn" class="btn-gov">🔍 Track Train</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" style="display: none; text-align: center; padding: 20px;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
+                <p>Tracking your train... Please wait</p>
+            </div>
+
+            <!-- Train Information Display -->
+            <div id="trainInfo" style="display: none;">
+                <!-- Train Details Card -->
+                <div class="stats-section">
+                    <div class="stats-header">
+                        <h3 id="trainTitle">🚂 Train Information</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div class="info-grid">
+                            <div class="detail-group">
+                                <h5>🚂 Train Details</h5>
+                                <p><strong>Name:</strong> <span id="trainName">-</span></p>
+                                <p><strong>Number:</strong> <span id="trainNum">-</span></p>
+                                <p><strong>Type:</strong> <span id="trainType">Express</span></p>
+                            </div>
+                            <div class="detail-group">
+                                <h5>📍 Current Status</h5>
+                                <p><strong>Speed:</strong> <span id="trainSpeed">-</span> km/h</p>
+                                <p><strong>Status:</strong> <span id="trainStatus">Running</span></p>
+                                <p><strong>Delay:</strong> <span id="trainDelay">On Time</span></p>
+                            </div>
+                            <div class="detail-group">
+                                <h5>🗺️ Location</h5>
+                                <p><strong>Current:</strong> <span id="currentLocation">-</span></p>
+                                <p><strong>Last Station:</strong> <span id="lastStation">-</span></p>
+                                <p><strong>Next Station:</strong> <span id="nextStation">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Map Section -->
+                <div class="stats-section">
+                    <div class="stats-header">
+                        <h3>🗺️ Live Train Location</h3>
+                        <div style="font-size: 12px; color: #666;">
+                            Last updated: <span id="lastUpdated">-</span> | Auto-refresh: <span id="refreshTimer">30s</span>
+                        </div>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div class="simple-map">
+                            <div class="location-display">
+                                <div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+                                    <div class="route-line">
+                                        <span class="station-point" id="lastStationPoint">Last Station</span>
+                                        <span class="train-icon" id="movingTrain">🚂</span>
+                                        <span class="station-point" id="nextStationPoint">Next Station</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: center; margin: 20px 0;">
+                                    <p><strong>📍 GPS Coordinates:</strong> <span id="coordinates">-</span></p>
+                                    <p><strong>🕐 Journey Progress:</strong> <span id="journeyProgress">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nearby Stations -->
+                <div class="stats-section">
+                    <div class="stats-header">
+                        <h3>🏥 Nearby Medical Stations</h3>
+                    </div>
+                    <div id="nearbyStations" style="padding: 20px;">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Emergency Actions -->
+                <div class="stats-section">
+                    <div class="stats-header">
+                        <h3>🚨 Emergency Actions</h3>
+                    </div>
+                    <div style="padding: 20px; text-align: center;">
+                        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                            <a href="/emergency" class="btn-gov">🏥 Report Medical Emergency</a>
+                            <button onclick="sendSOSFromTracker()" class="btn-gov" style="background: #dc3545;">🚨 Send SOS Alert</button>
+                            <button onclick="contactNearestStation()" class="btn-gov-secondary">📞 Contact Nearest Station</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" style="display: none; text-align: center; padding: 30px;">
+                <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                <h3>Train Not Found</h3>
+                <p>Please check the train number and try again.</p>
+                <button onclick="resetTracker()" class="btn-gov-secondary">Try Again</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="gov-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 Ministry of Railways, Government of India. All rights reserved.</p>
+                <p>Live Train Tracking System - Real-time location updates</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let refreshInterval;
+        let currentTrainNumber;
+
+        document.getElementById('trackBtn').addEventListener('click', trackTrain);
+        document.getElementById('trainNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') trackTrain();
+        });
+
+        function trackTrain() {
+            const trainNumber = document.getElementById('trainNumber').value.trim();
+            if (!trainNumber) {
+                alert('Please enter a train number');
+                return;
+            }
+
+            currentTrainNumber = trainNumber;
+            showLoading();
+            fetchTrainData(trainNumber);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('trainInfo').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function fetchTrainData(trainNumber) {
+            fetch(`/track_train/${trainNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    if (data.success) {
+                        displayTrainInfo(data);
+                        startAutoRefresh();
+                    } else {
+                        showError();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    showError();
+                });
+        }
+
+        function displayTrainInfo(data) {
+            const train = data.train_location;
+            const stations = data.nearest_stations;
+
+            // Update train details
+            document.getElementById('trainTitle').textContent = `🚂 ${train.train_name}`;
+            document.getElementById('trainName').textContent = train.train_name;
+            document.getElementById('trainNum').textContent = train.train_number;
+            document.getElementById('trainSpeed').textContent = Math.round(train.speed);
+            document.getElementById('lastStation').textContent = train.last_station;
+            document.getElementById('nextStation').textContent = train.next_station;
+            document.getElementById('coordinates').textContent = `${train.latitude.toFixed(4)}, ${train.longitude.toFixed(4)}`;
+            document.getElementById('currentLocation').textContent = `Between ${train.last_station} and ${train.next_station}`;
+            
+            // Update route display
+            document.getElementById('lastStationPoint').textContent = train.last_station;
+            document.getElementById('nextStationPoint').textContent = train.next_station;
+            
+            // Update timestamps
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+            
+            // Display nearby stations
+            displayNearbyStations(stations);
+            
+            // Show train info
+            document.getElementById('trainInfo').style.display = 'block';
+        }
+
+        function displayNearbyStations(stations) {
+            const container = document.getElementById('nearbyStations');
+            container.innerHTML = '';
+
+            if (stations && stations.length > 0) {
+                stations.forEach((station, index) => {
+                    const stationDiv = document.createElement('div');
+                    stationDiv.className = 'detail-group';
+                    stationDiv.innerHTML = `
+                        <h5>${index + 1}. ${station.name} (${station.code})</h5>
+                        <p><strong>Distance:</strong> ${station.distance_km} km</p>
+                        <p><strong>Contact:</strong> ${station.contact}</p>
+                        <p><strong>Medical Facility:</strong> ${station.medical_facility}</p>
+                        ${index === 0 ? '<p style="color: #28a745; font-weight: bold;">🏥 Nearest Medical Station</p>' : ''}
+                    `;
+                    container.appendChild(stationDiv);
+                });
+            } else {
+                container.innerHTML = '<p>No nearby stations found.</p>';
+            }
+        }
+
+        function startAutoRefresh() {
+            // Clear existing interval
+            if (refreshInterval) clearInterval(refreshInterval);
+            
+            let countdown = 30;
+            refreshInterval = setInterval(() => {
+                countdown--;
+                document.getElementById('refreshTimer').textContent = countdown + 's';
+                
+                if (countdown <= 0) {
+                    fetchTrainData(currentTrainNumber);
+                    countdown = 30;
+                }
+            }, 1000);
+        }
+
+        function showError() {
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('trainInfo').style.display = 'none';
+        }
+
+        function resetTracker() {
+            document.getElementById('trainNumber').value = '';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('trainInfo').style.display = 'none';
+            if (refreshInterval) clearInterval(refreshInterval);
+        }
+
+        function sendSOSFromTracker() {
+            if (confirm('Send SOS Emergency Alert?| tojson | safe}}n| tojson | safe}}nThis will immediately notify railway authorities about a life-threatening emergency.')) {
+                window.location.href = '/user_dashboard';
+            }
+        }
+
+        function contactNearestStation() {
+            const stations = document.querySelectorAll('#nearbyStations .detail-group');
+            if (stations.length > 0) {
+                const firstStation = stations[0];
+                const stationName = firstStation.querySelector('h5').textContent;
+                const contact = firstStation.textContent.match(/Contact: ([+| tojson | safe}}d-]+)/);
+                
+                if (contact) {
+                    if (confirm(`Contact ${stationName}?| tojson | safe}}n| tojson | safe}}nPhone: ${contact[1]}`)) {
+                        window.open(`tel:${contact[1]}`);
+                    }
+                }
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) clearInterval(refreshInterval);
+        });
+    </script>
+</body>
+</html>

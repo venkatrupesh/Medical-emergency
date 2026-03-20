@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extraordinary Features - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .feature-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover::before {
+            transform: translateX(0);
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .feature-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .feature-description {
+            font-size: 14px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        
+        .feature-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 15px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th {
+            background: #2c5aa0;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .check-mark {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .cross-mark {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .stats-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Government Header -->
+    <div class="gov-header"></div>
+    
+    <header class="main-header">
+        <div class="header-main">
+            <div class="container">
+                <div class="header-content">
+                    <div class="emblem"></div>
+                    <div class="title-section">
+                        <h1>✨ Extraordinary Features</h1>
+                        <div class="subtitle">असाधारण विशेषताएं</div>
+                        <div class="ministry">Beyond Traditional Railway Services</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="gov-nav">
+        <div class="container">
+            <div class="nav-content">
+                <ul class="nav-menu">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/features" class="active">Features</a></li>
+                    <li><a href="/ai_health">AI Health</a></li>
+                    <li><a href="/crowd_monitor">Crowd Monitor</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-title">
+                <h2>🚀 Revolutionary Features Not Available Anywhere</h2>
+                <p>Experience the next generation of railway passenger services</p>
+            </div>
+
+            <!-- Feature Showcase -->
+            <div class="feature-showcase">
+                <div class="feature-card">
+                    <span class="feature-icon">🤖</span>
+                    <div class="feature-title">AI Health Assistant</div>
+                    <div class="feature-description">
+                        Real-time medical guidance powered by AI. Get instant health advice, symptom analysis, and emergency recommendations during your journey.
+                    </div>
+                    <span class="feature-badge">🆕 Exclusive Feature</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <div class="feature-title">Live Crowd Monitor</div>
+                    <div class="feature-description">
+                        Real-time coach occupancy tracking. See which coaches are comfortable before boarding and choose your seat wisely.
+                    </div>
+                    <span class="feature-badge">🆕 Exclusive Feature</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">⭐</span>
+                    <div class="feature-title">Comfort Score</div>
+                    <div class="feature-description">
+                        AI-calculated comfort ratings based on occupancy, temperature, cleanliness, and amenities. Make informed decisions.
+                    </div>
+                    <span class="feature-badge">🆕 Exclusive Feature</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🌐</span>
+                    <div class="feature-title">6 Language Support</div>
+                    <div class="feature-description">
+                        English, Hindi, Telugu, Tamil, Bengali, and Malayalam. Accessible to all Indian passengers in their native language.
+                    </div>
+                    <span class="feature-badge">Accessibility</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🚨</span>
+                    <div class="feature-title">Emergency Response Tracking</div>
+                    <div class="feature-description">
+                        Live tracking of emergency response with real-time ETA. Know exactly when help will arrive at your location.
+                    </div>
+                    <span class="feature-badge">Safety First</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">💡</span>
+                    <div class="feature-title">Smart Health Tips</div>
+                    <div class="feature-description">
+                        Personalized health recommendations based on journey duration, age, and medical history. Stay healthy on the go.
+                    </div>
+                    <span class="feature-badge">Wellness</span>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-showcase">
+                <div class="stat-box">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Trains Tracked</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">40+</div>
+                    <div class="stat-label">Railway Stations</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Languages Supported</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Emergency Support</div>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="stats-section">
+                <div class="stats-header">
+                    <h3>📊 Feature Comparison</h3>
+                </div>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>TrainCare Connect</th>
+                            <th>Traditional IRCTC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AI Health Assistant</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Real-time Crowd Monitoring</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Comfort Score Rating</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Emergency Response Tracking</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Multi-Language Support (6 Languages)</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Live Medical Guidance</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Predictive Health Alerts</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Station Network Integration</td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Ticket Booking</td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="stats-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 40px;">
+                <h3 style="color: white; margin-top: 0;">Ready to Experience the Future?</h3>
+                <p style="font-size: 16px; margin: 20px 0;">Join thousands of passengers using TrainCare Connect for safer, healthier, and more comfortable journeys.</p>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <a href="/signup" class="btn-gov" style="background: white; color: #667eea; padding: 12px 30px; font-weight: bold;">Sign Up Now</a>
+                    <a href="/ai_health" class="btn-gov" style="background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 12px 30px; font-weight: bold;">Try AI Health</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="gov-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 Ministry of Railways. TrainCare Connect - The Future of Railway Services</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

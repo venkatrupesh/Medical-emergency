@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="report_emergency">{{ translations.get('report_emergency', 'Report Emergency') }} - TrainCare
+    </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .form-page {
+            min-height: 100vh;
+            ;
+            padding-top: 84px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 80px 48px;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .form-title {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 16px;
+        }
+
+        .form-subtitle {
+            font-size: 18px;
+            color: var(--gray-400);
+        }
+
+        .form-card {
+            background: var(--gray-900);
+            border: 1px solid var(--gray-800);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--gray-800);
+            border: 1px solid var(--gray-700);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .btn-submit {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-wrap">
+            <a href="/" class="logo">
+                <div class="logo-icon">🚑</div>
+                <span>TrainCare</span>
+            </a>
+            <div class="nav-btns">
+                <a href="/" class="btn btn-ghost">← Back</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="form-page">
+        <div class="form-container">
+            <div class="form-header">
+                <h1 class="form-title" data-translate="report_emergency">🚨 {{ translations.get('report_emergency',
+                    'Report Emergency') }}</h1>
+                <p class="form-subtitle">{{ translations.get('report_emergency_immediately', 'Help will be dispatched
+                    immediately to the nearest station') }}</p>
+            </div>
+
+            <div class="form-card">
+                <form id="emergencyForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" data-translate="passenger_name">{{
+                                translations.get('passenger_name', 'Passenger Name') }}</label>
+                            <input type="text" class="form-input" name="passenger_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-translate="phone_number">{{ translations.get('phone_number',
+                                'Phone Number') }}</label>
+                            <input type="tel" class="form-input" name="phone" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" data-translate="train_number">{{ translations.get('train_number',
+                                'Train Number') }}</label>
+                            <input type="text" class="form-input" name="train_number" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-translate="coach_number">{{ translations.get('coach_number',
+                                'Coach Number') }}</label>
+                            <input type="text" class="form-input" name="coach" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" data-translate="seat_number">{{ translations.get('seat_number',
+                                'Seat Number') }}</label>
+                            <input type="text" class="form-input" name="seat" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-translate="emergency_type">{{
+                                translations.get('emergency_type', 'Emergency Type') }}</label>
+                            <select class="form-select" name="emergency_type" required>
+                                <option value="heart_attack" data-translate="heart_attack">{{
+                                    translations.get('heart_attack', 'Heart Attack') }}</option>
+                                <option value="breathing_difficulty" data-translate="breathing_difficulty">{{
+                                    translations.get('breathing_difficulty', 'Breathing Difficulty') }}</option>
+                                <option value="severe_pain" data-translate="severe_pain">{{
+                                    translations.get('severe_pain', 'Severe Pain') }}</option>
+                                <option value="unconscious" data-translate="unconscious">{{
+                                    translations.get('unconscious', 'Unconscious') }}</option>
+                                <option value="injury_accident" data-translate="injury_accident">{{
+                                    translations.get('injury_accident', 'Injury/Accident') }}</option>
+                                <option value="high_fever" data-translate="high_fever">{{ translations.get('high_fever',
+                                    'High Fever') }}</option>
+                                <option value="sos" data-translate="sos">{{ translations.get('sos', 'SOS - Critical') }}
+                                </option>
+                                <option value="other" data-translate="other">{{ translations.get('other', 'Other') }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-translate="description">{{ translations.get('description',
+                            'Description') }}</label>
+                        <textarea class="form-textarea" name="description" required></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost btn-lg" onclick="getLocation()">
+                            📍 {{ translations.get('get_location', 'Get Location') }}
+                        </button>
+                        <button type="submit" class="btn btn-danger btn-lg btn-submit" data-translate="submit_report">
+                            🚨 {{ translations.get('submit_report', 'Submit Emergency Report') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        window.TRANSLATIONS = {{ translations | tojson | safe }};
+        window.CURRENT_LANG = '{{ lang }}';
+        if (typeof initTranslations === 'function') {
+            initTranslations();
+        }
+
+        let locationData = {};
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    locationData = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    alert('Location captured successfully!');
+                });
+            }
+        }
+
+        document.getElementById('emergencyForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.location_lat = locationData.lat;
+            data.location_lng = locationData.lng;
+
+            fetch('/submit_emergency', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Emergency reported! Help is on the way.');
+                        window.location.href = '/';
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>

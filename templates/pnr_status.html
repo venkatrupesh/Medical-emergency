@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNR Status - TrainCare Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pnr-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .pnr-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+        }
+        .pnr-input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .pnr-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        .pnr-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        .check-btn {
+            padding: 14px 32px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .check-btn:hover {
+            background: var(--primary-dark);
+        }
+        .pnr-result {
+            margin-top: 30px;
+            padding: 30px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            display: none;
+        }
+        .pnr-result.show {
+            display: block;
+        }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .pnr-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: 3px;
+        }
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .status-confirmed {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success-color);
+        }
+        .status-waiting {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-color);
+        }
+        .train-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .detail-item {
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+        }
+        .detail-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .passenger-list {
+            margin-top: 24px;
+        }
+        .passenger-item {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .passenger-info h4 {
+            margin: 0 0 8px;
+            color: var(--text-primary);
+        }
+        .passenger-info p {
+            margin: 4px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo-section">
+                    <div class="logo-icon"><i class="fas fa-train"></i></div>
+                    <div class="logo-text">
+                        <h1>TrainCare Connect</h1>
+                        <span>Check PNR Status</span>
+                    </div>
+                </a>
+                <nav class="main-nav">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/train_booking" class="nav-link">Book Ticket</a>
+                    <a href="/pnr_status" class="nav-link active">PNR Status</a>
+                    <a href="/seat_availability" class="nav-link">Seat Availability</a>
+                </nav>
+                <div class="header-actions">
+                    <div class="language-switcher">
+                        <button class="lang-btn" id="langBtn">
+                            <i class="fas fa-globe"></i>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lang-dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" class="lang-option {% if code == lang %}active{% endif %}">
+                                <span class="lang-flag">{{ lang_info.flag }}</span>
+                                <span class="lang-name">{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="/login" class="btn btn-outline">Login</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="pnr-container">
+        <div class="pnr-card">
+            <h2 style="margin-bottom: 30px; color: var(--text-primary);">
+                <i class="fas fa-clipboard-check" style="color: var(--primary-color); margin-right: 12px;"></i>
+                Check PNR Status
+            </h2>
+            
+            <div class="pnr-input-group">
+                <input type="text" class="pnr-input" id="pnrInput" placeholder="Enter 10-digit PNR Number" maxlength="10" pattern="[0-9]{10}">
+                <button class="check-btn" onclick="checkPNR()">
+                    <i class="fas fa-search"></i> Check Status
+                </button>
+            </div>
+            
+            <div id="pnrResult" class="pnr-result">
+                <div class="result-header">
+                    <div>
+                        <div class="detail-label">PNR Number</div>
+                        <div class="pnr-number" id="pnrNumber"></div>
+                    </div>
+                    <div class="status-badge" id="statusBadge"></div>
+                </div>
+                
+                <div class="train-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Train Number</div>
+                        <div class="detail-value" id="trainNumber"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Train Name</div>
+                        <div class="detail-value" id="trainName"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">From Station</div>
+                        <div class="detail-value" id="fromStation"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">To Station</div>
+                        <div class="detail-value" id="toStation"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Journey Date</div>
+                        <div class="detail-value" id="journeyDate"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Chart Status</div>
+                        <div class="detail-value" id="chartStatus"></div>
+                    </div>
+                </div>
+                
+                <div class="passenger-list">
+                    <h3 style="margin-bottom: 16px;">Passenger Details</h3>
+                    <div id="passengerList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language switcher
+        document.getElementById('langBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('langDropdown').classList.toggle('show');
+        });
+        
+        document.addEventListener('click', function(e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        // PNR input - only numbers
+        document.getElementById('pnrInput').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        
+        // Enter key to check
+        document.getElementById('pnrInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPNR();
+            }
+        });
+        
+        function checkPNR() {
+            const pnr = document.getElementById('pnrInput').value;
+            
+            if (pnr.length !== 10) {
+                alert('Please enter a valid 10-digit PNR number');
+                return;
+            }
+            
+            fetch(`/api/check_pnr/${pnr}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayPNRResult(data.data);
+                    } else {
+                        alert('PNR not found. Please check the number and try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error checking PNR. Please try again.');
+                });
+        }
+        
+        function displayPNRResult(data) {
+            document.getElementById('pnrNumber').textContent = data.pnr;
+            document.getElementById('trainNumber').textContent = data.train_number;
+            document.getElementById('trainName').textContent = data.train_name;
+            document.getElementById('fromStation').textContent = data.from_station;
+            document.getElementById('toStation').textContent = data.to_station;
+            document.getElementById('journeyDate').textContent = data.journey_date;
+            document.getElementById('chartStatus').textContent = data.chart_status;
+            
+            // Status badge
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = data.booking_status;
+            statusBadge.className = 'status-badge ' + 
+                (data.booking_status === 'Confirmed' ? 'status-confirmed' : 'status-waiting');
+            
+            // Passenger list
+            const passengerList = document.getElementById('passengerList');
+            passengerList.innerHTML = data.passengers.map((passenger, index) => `
+                <div class="passenger-item">
+                    <div class="passenger-info">
+                        <h4>Passenger ${index + 1}: ${passenger.name}</h4>
+                        <p><strong>Status:</strong> ${passenger.status}</p>
+                        <p><strong>Coach:</strong> ${passenger.coach} | <strong>Seat:</strong> ${passenger.seat}</p>
+                    </div>
+                    <div class="status-badge ${passenger.status === 'CNF' ? 'status-confirmed' : 'status-waiting'}">
+                        ${passenger.status}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('pnrResult').classList.add('show');
+            document.getElementById('pnrResult').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

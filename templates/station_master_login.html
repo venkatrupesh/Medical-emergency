@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="station_master_login">Station Master Login - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <div class="site-header__logo">
+                    <div class="site-header__logo-icon">🚉</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title" data-translate="railway_emergency_system">Railway Emergency System</h1>
+                        <p class="site-header__logo-subtitle" data-translate="station_master_portal">Station Master Portal</p>
+                    </div>
+                </div>
+                
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" data-translate="return_to_home">Return to Home</a>
+                </nav>
+                
+                <div class="site-header__actions">
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language" aria-expanded="false">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" 
+                               class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <section class="section">
+            <div class="container container-narrow">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <div class="card__header">
+                        <h2 style="margin: 0;" data-translate="station_master_signin">Station Master Sign-in</h2>
+                        <p style="margin: var(--space-2) 0 0 0; color: var(--text-muted); font-size: 0.875rem;" data-translate="station_master_desc">
+                            Access your station's emergency reports and coordinate medical response.
+                        </p>
+                    </div>
+
+                    <form id="stationMasterLoginForm" class="card__body">
+                        <div id="errorMessage" class="alert" style="display: none; margin-bottom: var(--space-4);"></div>
+
+                        <div class="form-group">
+                            <label for="station_code" class="form-label form-label--required" data-translate="station_code">Station Code</label>
+                            <input type="text" id="station_code" name="station_code" class="form-control" required autocomplete="username" placeholder="Enter station code (e.g., NDLS)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label form-label--required" data-translate="password">Password</label>
+                            <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password" placeholder="Enter password">
+                        </div>
+
+                        <div class="card__footer" style="margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--gray-200);">
+                            <button type="submit" class="btn btn--primary btn--large btn--block" data-translate="sign_in">
+                                Sign In
+                            </button>
+                            <p class="text-center" style="margin-top: var(--space-4); margin-bottom: 0; font-size: 0.875rem; color: var(--text-muted);">
+                                <a href="/" data-translate="return_to_home">Return to home</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3 data-translate="station_master_portal">Station Master Portal</h3>
+                    <p data-translate="authorized_personnel">Authorized Personnel Only</p>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>&copy; 2024 Railway Medical Emergency Response System. Ministry of Railways.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Translations Data -->
+    <script id="translations-data" type="application/json">{{ translations | tojson }}</script>
+    
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        // Station Master login form submission
+        document.getElementById('stationMasterLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                station_code: formData.get('station_code'),
+                password: formData.get('password')
+            };
+            
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'none';
+            
+            fetch('/station_master_login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    window.location.href = '/station_master_dashboard';
+                } else {
+                    errorDiv.style.display = 'block';
+                    errorDiv.className = 'alert alert--error';
+                    errorDiv.textContent = '❌ ' + result.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorDiv.style.display = 'block';
+                errorDiv.className = 'alert alert--error';
+                errorDiv.textContent = '❌ Login failed. Please try again.';
+            });
+        });
+    </script>
+</body>
+</html>

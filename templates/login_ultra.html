@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="login">Login - TrainCare</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            ;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+        }
+        
+        .auth-container {
+            max-width: 480px;
+            width: 100%;
+        }
+        
+        .auth-card {
+            background: var(--gray-900);
+            border: 1px solid var(--gray-800);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .auth-logo {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 24px rgba(10, 132, 255, 0.3);
+        }
+        
+        .auth-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        
+        .auth-subtitle {
+            color: var(--gray-400);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--gray-800);
+            border: 1px solid var(--gray-700);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 32px;
+            color: var(--gray-400);
+        }
+        
+        .auth-footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">🚑</div>
+                    <h1 class="auth-title" data-translate="login">Login</h1>
+                    <p class="auth-subtitle">Welcome back to TrainCare</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" data-translate="username">Username</label>
+                        <input type="text" class="form-input" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" data-translate="password">Password</label>
+                        <input type="password" class="form-input" name="password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 8px;" data-translate="login">
+                        Login
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    Don't have an account? <a href="/signup" data-translate="signup">Sign Up</a>
+                    <br><br>
+                    <a href="/">← Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        window.TRANSLATIONS = {{ translations | tojson | safe }};
+        window.CURRENT_LANG = '{{ lang }}';
+        if (typeof initTranslations === 'function') {
+            initTranslations();
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            fetch('/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/user_dashboard';
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

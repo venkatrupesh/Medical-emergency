@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Dashboard - Railway Emergency Response</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/clean-modern.css') }}">
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .dashboard-title h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .dashboard-title p {
+            color: #6b7280;
+            margin: 0;
+        }
+        
+        .dashboard-status {
+            text-align: right;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .refresh-timer {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card.sos { border-left-color: #ef4444; }
+        .stat-card.pending { border-left-color: #f59e0b; }
+        .stat-card.total { border-left-color: #0066CC; }
+        .stat-card.resolved { border-left-color: #10b981; }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card.sos .stat-value { color: #ef4444; }
+        .stat-card.pending .stat-value { color: #f59e0b; }
+        .stat-card.total .stat-value { color: #0066CC; }
+        .stat-card.resolved .stat-value { color: #10b981; }
+        
+        .stat-label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .reports-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .reports-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .reports-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            border-color: #0066CC;
+            color: #0066CC;
+        }
+        
+        .filter-btn.active {
+            background: #0066CC;
+            color: white;
+            border-color: #0066CC;
+        }
+        
+        .reports-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f9fafb;
+        }
+        
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.875rem;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-sos {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-resolved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-assigned {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-unassigned {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .action-btn {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .action-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .action-btn.primary {
+            background: #0066CC;
+            color: white;
+            border-color: #0066CC;
+        }
+        
+        .action-btn.primary:hover {
+            background: #0052a3;
+        }
+        
+        .action-btn.success {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        .action-btn.success:hover {
+            background: #059669;
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .nav-bar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0066CC;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: #0066CC;
+        }
+        
+        .nav-link.active {
+            color: #0066CC;
+        }
+        
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <div class="nav-brand">🛡️ Admin Dashboard</div>
+            <div class="nav-links">
+                <a href="/authority_dashboard" class="nav-link active">Emergency Reports</a>
+                <a href="/ai_health" class="nav-link">AI Health Agent</a>
+                <a href="/crowd_monitor" class="nav-link">Crowd Monitor</a>
+                <a href="/train_tracker" class="nav-link">Train Tracker</a>
+                <a href="/" class="nav-link">Home</a>
+                <a href="/admin_logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard -->
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Emergency Reports Dashboard</h1>
+                <p>Monitor and manage medical emergency reports from passengers</p>
+            </div>
+            <div class="dashboard-status">
+                <div class="status-badge">● SYSTEM ONLINE</div>
+                <div class="refresh-timer">Auto-refresh: <span id="refreshTimer">30</span>s</div>
+            </div>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card sos">
+                <div class="stat-value">{{ sos_count }}</div>
+                <div class="stat-label">SOS Alerts</div>
+            </div>
+            <div class="stat-card pending">
+                <div class="stat-value">{{ pending_count }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card total">
+                <div class="stat-value">{{ total_count }}</div>
+                <div class="stat-label">Total Reports</div>
+            </div>
+            <div class="stat-card resolved">
+                <div class="stat-value">{{ resolved_count }}</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div class="reports-section">
+            <div class="reports-header">
+                <h2>Emergency Reports</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterReports('all')" id="filter-all">All</button>
+                    <button class="filter-btn" onclick="filterReports('sos')" id="filter-sos">SOS</button>
+                    <button class="filter-btn" onclick="filterReports('pending')" id="filter-pending">Pending</button>
+                    <button class="filter-btn" onclick="filterReports('in_progress')" id="filter-in-progress">In Progress</button>
+                    <button class="filter-btn" onclick="filterReports('resolved')" id="filter-resolved">Resolved</button>
+                </div>
+            </div>
+            
+            {% if enhanced_reports %}
+            <div class="reports-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Passenger</th>
+                            <th>Phone</th>
+                            <th>Train</th>
+                            <th>Coach</th>
+                            <th>Seat</th>
+                            <th>Emergency</th>
+                            <th>Nearest Station</th>
+                            <th>Assigned To</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        {% for item in enhanced_reports %}
+                        {% set report = item.report %}
+                        {% set status = report[9] %}
+                        {% set is_sos = (report[6] == 'sos') %}
+                        <tr class="report-row" data-status="{{ status }}" data-type="{{ 'sos' if is_sos else 'normal' }}">
+                            <td><strong>#{{ report[0] }}</strong></td>
+                            <td>
+                                {% if is_sos %}
+                                <span class="badge badge-sos">🚨 SOS</span>
+                                {% elif status == 'pending' %}
+                                <span class="badge badge-pending">Pending</span>
+                                {% elif status == 'in_progress' %}
+                                <span class="badge badge-progress">In Progress</span>
+                                {% elif status == 'resolved' %}
+                                <span class="badge badge-resolved">✓ Resolved</span>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ report[1] }}</strong></td>
+                            <td><a href="tel:{{ report[2] }}">{{ report[2] }}</a></td>
+                            <td><strong>{{ report[3] }}</strong></td>
+                            <td>{{ report[4] }}</td>
+                            <td>{{ report[5] }}</td>
+                            <td>{{ report[6].replace('_', ' ').title() }}</td>
+                            <td>
+                                {% if item.nearest_stations and item.nearest_stations|length > 0 %}
+                                <strong>{{ item.nearest_stations[0].name }}</strong><br>
+                                <small style="color: #6b7280;">{{ item.nearest_stations[0].distance_km }} km • {{ item.nearest_stations[0].eta_minutes }} min</small>
+                                {% else %}
+                                <span style="color: #9ca3af;">Calculating...</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report|length > 13 and report[13] %}
+                                <span class="badge badge-assigned">✓ {{ report[13] }}</span><br>
+                                <small>{{ report[14] }}</small>
+                                {% else %}
+                                <span class="badge badge-unassigned">Not Assigned</span>
+                                {% endif %}
+                            </td>
+                            <td><small style="color: #6b7280;">{{ report[10][:16] if report[10] else 'N/A' }}</small></td>
+                            <td>
+                                {% if report|length > 13 and report[13] %}
+                                <button class="action-btn" disabled>✓ Assigned</button>
+                                {% elif item.nearest_stations and item.nearest_stations|length > 0 %}
+                                <button class="action-btn success" onclick="notifyStationMaster({{ report[0] }}, '{{ report[3] }}', '{{ item.train_location.train_name if item.train_location else '' }}', '{{ report[6] }}', '{{ report[1] }}', '{{ report[4] }}', '{{ report[5] }}', '{{ item.nearest_stations[0].code }}', '{{ item.nearest_stations[0].name }}', {{ item.nearest_stations[0].eta_minutes }})">
+                                    Assign to {{ item.nearest_stations[0].code }}
+                                </button>
+                                {% endif %}
+                                {% if status == 'pending' %}
+                                <button class="action-btn primary" onclick="updateStatus({{ report[0] }}, 'in_progress')">In Progress</button>
+                                {% elif status == 'in_progress' %}
+                                <button class="action-btn primary" onclick="updateStatus({{ report[0] }}, 'resolved')">Resolve</button>
+                                {% endif %}
+                                <a href="/emergency_map/{{ report[0] }}" class="action-btn">View Map</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">✓</div>
+                <h3>No Emergency Reports</h3>
+                <p>All systems operational. No active emergencies at this time.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Filter Reports
+        function filterReports(filter) {
+            const rows = document.querySelectorAll('.report-row');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter-' + filter.replace('_', '-')).classList.add('active');
+            
+            rows.forEach(row => {
+                if (filter === 'all') {
+                    row.style.display = '';
+                } else if (filter === 'sos') {
+                    row.style.display = row.dataset.type === 'sos' ? '' : 'none';
+                } else {
+                    row.style.display = row.dataset.status === filter ? '' : 'none';
+                }
+            });
+        }
+
+        // Update Status
+        function updateStatus(reportId, newStatus) {
+            if (!confirm(`Update report #${reportId} to "${newStatus.replace('_', ' ')}"?`)) return;
+            
+            fetch(`/update_status/${reportId}/${newStatus}`)
+                .then(response => response.ok ? location.reload() : alert('Error updating status'))
+                .catch(() => alert('Error updating status'));
+        }
+
+        // Assign to Station Master
+        function notifyStationMaster(reportId, trainNumber, trainName, emergencyType, passengerName, coach, seat, stationCode, stationName, etaMinutes) {
+            if (!confirm(`Assign to ${stationName} (${stationCode})?\n\nTrain: ${trainNumber}\nPassenger: ${passengerName}\nEmergency: ${emergencyType}\nETA: ${etaMinutes} min`)) return;
+            
+            fetch('/assign_emergency', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    emergency_id: reportId,
+                    station_code: stationCode,
+                    station_name: stationName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.success ? `✅ Assigned to ${stationName}` : `❌ ${data.message}`);
+                if (data.success) location.reload();
+            })
+            .catch(() => alert('❌ Error assigning emergency'));
+        }
+
+        // Auto-refresh
+        let countdown = 30;
+        setInterval(() => {
+            countdown--;
+            document.getElementById('refreshTimer').textContent = countdown;
+            if (countdown <= 0) {
+                countdown = 30;
+                location.reload();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

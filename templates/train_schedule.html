@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Schedule - TrainCare Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .schedule-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .schedule-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+        }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        .schedule-table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .schedule-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .schedule-table tr:hover {
+            background: var(--bg-secondary);
+        }
+        .station-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .time {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo-section">
+                    <div class="logo-icon"><i class="fas fa-train"></i></div>
+                    <div class="logo-text">
+                        <h1>TrainCare Connect</h1>
+                        <span>Train Schedule</span>
+                    </div>
+                </a>
+                <nav class="main-nav">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/train_booking" class="nav-link">Book Ticket</a>
+                    <a href="/pnr_status" class="nav-link">PNR Status</a>
+                    <a href="/train_schedule" class="nav-link active">Schedule</a>
+                </nav>
+                <div class="header-actions">
+                    <div class="language-switcher">
+                        <button class="lang-btn" id="langBtn">
+                            <i class="fas fa-globe"></i>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lang-dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" class="lang-option {% if code == lang %}active{% endif %}">
+                                <span class="lang-flag">{{ lang_info.flag }}</span>
+                                <span class="lang-name">{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="/login" class="btn btn-outline">Login</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="schedule-container">
+        <div class="schedule-card">
+            <h2 style="margin-bottom: 30px; color: var(--text-primary);">
+                <i class="fas fa-calendar-alt" style="color: var(--primary-color); margin-right: 12px;"></i>
+                Train Schedule
+            </h2>
+            
+            <form id="scheduleForm">
+                <div class="form-group">
+                    <label><i class="fas fa-train"></i> Train Number</label>
+                    <div style="display: flex; gap: 12px;">
+                        <input type="text" class="form-control" id="trainNumber" placeholder="Enter train number" required>
+                        <button type="submit" class="check-btn">
+                            <i class="fas fa-search"></i> Get Schedule
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div id="scheduleResult" style="display: none; margin-top: 30px;">
+                <div class="train-details" style="margin-bottom: 24px;">
+                    <div class="detail-item">
+                        <div class="detail-label">Train Number</div>
+                        <div class="detail-value" id="resultTrainNumber"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Train Name</div>
+                        <div class="detail-value" id="resultTrainName"></div>
+                    </div>
+                </div>
+                
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Station</th>
+                            <th>Arrival</th>
+                            <th>Departure</th>
+                            <th>Halt</th>
+                            <th>Platform</th>
+                            <th>Day</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('langBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('langDropdown').classList.toggle('show');
+        });
+        
+        document.addEventListener('click', function(e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const trainNumber = document.getElementById('trainNumber').value;
+            
+            fetch(`/api/get_train_schedule/${trainNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySchedule(data);
+                    } else {
+                        alert('Train schedule not found. Please check the train number.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error fetching schedule. Please try again.');
+                });
+        });
+        
+        function displaySchedule(data) {
+            document.getElementById('resultTrainNumber').textContent = data.train_number;
+            document.getElementById('resultTrainName').textContent = data.train_name;
+            
+            const tbody = document.getElementById('scheduleTableBody');
+            tbody.innerHTML = data.schedule.map(station => `
+                <tr>
+                    <td class="station-name">${station.station}</td>
+                    <td class="time">${station.arrival}</td>
+                    <td class="time">${station.departure}</td>
+                    <td>${station.halt}</td>
+                    <td>${station.platform}</td>
+                    <td>Day ${station.day}</td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('scheduleResult').style.display = 'block';
+            document.getElementById('scheduleResult').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

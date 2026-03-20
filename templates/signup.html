@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger Registration - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <a href="/" class="site-header__logo">
+                    <div class="site-header__logo-icon">📝</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">{{ translations.get('railway_emergency_system', 'Railway
+                            Emergency System') }}</h1>
+                        <p class="site-header__logo-subtitle">{{ translations.get('passenger_registration', 'Passenger
+                            Registration') }}</p>
+                    </div>
+                </a>
+
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link">{{ translations.get('home', 'Home') }}</a>
+                    <a href="/login" class="site-header__nav-link">{{ translations.get('login', 'Login') }}</a>
+                    <a href="/signup" class="site-header__nav-link site-header__nav-link--active">{{
+                        translations.get('signup', 'Sign Up') }}</a>
+                </nav>
+
+                <div class="site-header__actions">
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language"
+                            aria-expanded="false">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}"
+                                class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <section class="section">
+            <div class="container container-narrow">
+                <div class="text-center" style="margin-bottom: var(--space-8);">
+                    <h1>{{ translations.get('create_passenger_account', 'Create Passenger Account') }}</h1>
+                    <p style="color: var(--text-secondary);">{{ translations.get('register_desc', 'Register to access
+                        emergency services and passenger dashboard') }}</p>
+                </div>
+
+                <!-- Signup Form -->
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <div class="card__header">
+                        <h2 style="margin: 0;">{{ translations.get('create_new_account', 'Create New Account') }}</h2>
+                        <p style="margin: var(--space-2) 0 0 0; color: var(--text-muted); font-size: 0.875rem;">{{
+                            translations.get('fill_details', 'Fill in your details to register') }}</p>
+                    </div>
+
+                    <form id="signupForm" class="card__body">
+                        <div class="form-group">
+                            <label for="username" class="form-label form-label--required">{{
+                                translations.get('username', 'Username') }}</label>
+                            <input type="text" id="username" name="username" class="form-control" required minlength="3"
+                                autocomplete="username">
+                            <span class="form-help">Minimum 3 characters</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label form-label--required">{{ translations.get('email',
+                                'Email Address') }}</label>
+                            <input type="email" id="email" name="email" class="form-control" required
+                                autocomplete="email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="form-label form-label--required">{{
+                                translations.get('phone_number', 'Mobile Number') }}</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" required pattern="[0-9]{10}"
+                                maxlength="10" autocomplete="tel">
+                            <span class="form-help">10-digit mobile number</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label form-label--required">{{
+                                translations.get('password', 'Password') }}</label>
+                            <input type="password" id="password" name="password" class="form-control" required
+                                minlength="6" autocomplete="new-password">
+                            <span class="form-help">Minimum 6 characters</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm_password" class="form-label form-label--required">{{
+                                translations.get('confirm_password', 'Confirm Password') }}</label>
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                                required autocomplete="new-password">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; font-size: 0.875rem; cursor: pointer;">
+                                <input type="checkbox" id="terms" required
+                                    style="margin-right: var(--space-2); width: auto;">
+                                I agree to the <a href="#" style="margin: 0 var(--space-1);">Terms and Conditions</a>
+                                and <a href="#">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <div id="signupMessage" class="alert" style="display: none; margin-bottom: var(--space-4);">
+                        </div>
+
+                        <div class="card__footer"
+                            style="margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--gray-200);">
+                            <button type="submit" class="btn btn--primary btn--large btn--block">
+                                {{ translations.get('create_account', 'Create Account') }}
+                            </button>
+                            <p class="text-center"
+                                style="margin-top: var(--space-4); margin-bottom: 0; font-size: 0.875rem; color: var(--text-muted);">
+                                {{ translations.get('already_have_account', 'Already have an account?') }} <a
+                                    href="/login" style="font-weight: 600;">{{ translations.get('login', 'Login Here')
+                                    }}</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Benefits Section -->
+                <div class="card" style="margin-top: var(--space-8);">
+                    <div class="card__header">
+                        <h3 style="margin: 0;">Account Benefits</h3>
+                    </div>
+                    <div class="card__body">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-6);">
+                            <div>
+                                <h4 style="margin-bottom: var(--space-2);">🚨 Emergency Services</h4>
+                                <p style="font-size: 0.875rem; margin-bottom: 0;">Quick access to SOS alerts, medical
+                                    emergency reporting, and real-time assistance</p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: var(--space-2);">📱 Personal Dashboard</h4>
+                                <p style="font-size: 0.875rem; margin-bottom: 0;">Track your emergency reports, view
+                                    response status, and access train tracking</p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: var(--space-2);">🔒 Secure & Private</h4>
+                                <p style="font-size: 0.875rem; margin-bottom: 0;">Your data is protected with
+                                    government-grade security and privacy compliance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>Account Services</h3>
+                    <ul>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/signup">Sign Up</a></li>
+                        <li><a href="#">Account Help</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Emergency Contacts</h3>
+                    <ul>
+                        <li><a href="tel:139">Railway Emergency: 139</a></li>
+                        <li><a href="tel:112">National Emergency: 112</a></li>
+                        <li><a href="tel:108">Ambulance: 108</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>{{ translations.get('copyright', '&copy; 2024 Railway Medical Emergency Response System. Ministry of
+                    Railways.') }}</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Translations Data -->
+    <script id="translations-data" type="application/json">{{ translations | tojson }}</script>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        document.getElementById('langBtn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('langDropdown');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            dropdown.classList.toggle('lang-switcher__dropdown--show');
+            this.setAttribute('aria-expanded', !isExpanded);
+        });
+
+        document.addEventListener('click', function (e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('lang-switcher__dropdown--show');
+                langBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Phone number validation
+        document.getElementById('phone').addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirm_password');
+
+            if (password !== confirmPassword) {
+                showMessage('❌ Passwords do not match', 'error');
+                return;
+            }
+
+            const data = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                password: password
+            };
+
+            const messageDiv = document.getElementById('signupMessage');
+            messageDiv.style.display = 'none';
+
+            fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    messageDiv.style.display = 'block';
+
+                    if (result.success) {
+                        messageDiv.className = 'alert alert--success';
+                        messageDiv.textContent = '✅ ' + result.message + ' Redirecting to login...';
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 2000);
+                    } else {
+                        messageDiv.className = 'alert alert--error';
+                        messageDiv.textContent = '❌ ' + result.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    messageDiv.style.display = 'block';
+                    messageDiv.className = 'alert alert--error';
+                    messageDiv.textContent = '❌ Registration failed. Please try again.';
+                });
+        });
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('signupMessage');
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'alert alert--' + type;
+            messageDiv.textContent = message;
+        }
+    </script>
+</body>
+
+</html>

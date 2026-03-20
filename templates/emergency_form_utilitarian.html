@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Medical Emergency - Railway Emergency Response</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <a href="/" class="site-header__logo">
+                    <div class="site-header__logo-icon">🚑</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">Railway Medical Emergency Response</h1>
+                        <p class="site-header__logo-subtitle">Report Medical Emergency</p>
+                    </div>
+                </a>
+                
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link">Home</a>
+                    <a href="/emergency" class="site-header__nav-link site-header__nav-link--active">Report Emergency</a>
+                    <a href="/train_search" class="site-header__nav-link">Train Search</a>
+                </nav>
+                
+                <div class="site-header__actions">
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language" aria-expanded="false">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" 
+                               class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="/login" class="btn btn--secondary" style="color: #ffffff; border-color: rgba(255,255,255,0.5);">Login</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <!-- Critical Notice -->
+        <section class="section" style="background-color: #fff3cd; border-top: 4px solid var(--color-emergency); border-bottom: 4px solid var(--color-emergency); padding: 1rem 0;">
+            <div class="container container-narrow">
+                <div class="alert alert--warning" style="margin-bottom: 0;">
+                    <p style="margin: 0; font-weight: 600;">
+                        <strong>For life-threatening emergencies:</strong> Call <a href="tel:112" style="font-weight: 700;">112</a> or Railway Helpline <a href="tel:139" style="font-weight: 700;">139</a> immediately. 
+                        Do not wait for this form.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emergency Form -->
+        <section class="section">
+            <div class="container container-narrow">
+                <div class="card" style="border: 2px solid var(--color-emergency);">
+                    <div class="card__header" style="background-color: var(--color-emergency); color: #ffffff; margin: -1.5rem -1.5rem 1.5rem -1.5rem; padding: 1.5rem; border-radius: 4px 4px 0 0;">
+                        <h2 style="color: #ffffff; margin: 0; font-size: 1.5rem;">Medical Emergency Report Form</h2>
+                        <p style="color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 0.875rem;">
+                            Provide details below. Railway authorities will arrange medical assistance at the nearest station.
+                        </p>
+                    </div>
+
+                    <form id="emergencyForm" class="card__body">
+                        <!-- Passenger Information -->
+                        <div class="form-group">
+                            <label for="passenger_name" class="form-label form-label--required">
+                                Passenger Name
+                            </label>
+                            <input type="text" 
+                                   id="passenger_name" 
+                                   name="passenger_name" 
+                                   class="form-control form-control--large" 
+                                   required 
+                                   autocomplete="name"
+                                   placeholder="Enter full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="form-label form-label--required">
+                                Mobile Number
+                            </label>
+                            <input type="tel" 
+                                   id="phone" 
+                                   name="phone" 
+                                   class="form-control form-control--large" 
+                                   required 
+                                   pattern="[0-9]{10}"
+                                   maxlength="10"
+                                   autocomplete="tel"
+                                   placeholder="10-digit mobile number">
+                            <span class="form-help">Enter 10-digit mobile number without spaces</span>
+                        </div>
+
+                        <!-- Train Information -->
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.25rem; border-bottom: 2px solid var(--color-border-light); padding-bottom: 0.5rem;">
+                            Train Details
+                        </h3>
+
+                        <div class="form-group">
+                            <label for="train_number" class="form-label form-label--required">
+                                Train Number
+                            </label>
+                            <input type="text" 
+                                   id="train_number" 
+                                   name="train_number" 
+                                   class="form-control form-control--large" 
+                                   required 
+                                   placeholder="e.g., 12301">
+                            <span class="form-help">Enter 5-digit train number</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="coach" class="form-label form-label--required">
+                                    Coach Number
+                                </label>
+                                <input type="text" 
+                                       id="coach" 
+                                       name="coach" 
+                                       class="form-control form-control--large" 
+                                       required 
+                                       placeholder="e.g., S1, B2">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="seat" class="form-label form-label--required">
+                                    Seat Number
+                                </label>
+                                <input type="text" 
+                                       id="seat" 
+                                       name="seat" 
+                                       class="form-control form-control--large" 
+                                       required 
+                                       placeholder="e.g., 23">
+                            </div>
+                        </div>
+
+                        <!-- Emergency Details -->
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.25rem; border-bottom: 2px solid var(--color-border-light); padding-bottom: 0.5rem;">
+                            Emergency Details
+                        </h3>
+
+                        <div class="form-group">
+                            <label for="emergency_type" class="form-label form-label--required">
+                                Type of Emergency
+                            </label>
+                            <select id="emergency_type" 
+                                    name="emergency_type" 
+                                    class="form-control form-control--large" 
+                                    required>
+                                <option value="">-- Select Emergency Type --</option>
+                                <option value="heart_attack">Heart Attack / Chest Pain</option>
+                                <option value="breathing_difficulty">Breathing Difficulty</option>
+                                <option value="severe_pain">Severe Pain</option>
+                                <option value="unconscious">Unconscious / Fainting</option>
+                                <option value="injury_accident">Injury / Accident</option>
+                                <option value="high_fever">High Fever</option>
+                                <option value="sos">SOS - Critical Emergency</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description" class="form-label form-label--required">
+                                Describe the Emergency
+                            </label>
+                            <textarea id="description" 
+                                      name="description" 
+                                      class="form-control" 
+                                      rows="5" 
+                                      required 
+                                      placeholder="Describe the medical emergency in detail. Include symptoms, time of onset, and current condition."></textarea>
+                            <span class="form-help">Provide clear details to help medical team prepare</span>
+                        </div>
+
+                        <!-- Location (Optional) -->
+                        <div class="form-group">
+                            <label class="form-label">Current Location</label>
+                            <button type="button" 
+                                    id="getLocation" 
+                                    class="btn btn--outline btn--block"
+                                    style="margin-bottom: 0.5rem;">
+                                📍 Get Current Location
+                            </button>
+                            <div id="locationStatus" class="form-help" style="display: none; padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); margin-top: var(--space-2);"></div>
+                            <input type="hidden" id="location" name="location">
+                            <input type="hidden" id="location_lat" name="location_lat">
+                            <input type="hidden" id="location_lng" name="location_lng">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="card__footer" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--color-border-light);">
+                            <button type="submit" class="btn btn--emergency btn--large btn--block">
+                                Submit Emergency Report
+                            </button>
+                            <p style="text-align: center; margin-top: 1rem; margin-bottom: 0; font-size: 0.875rem; color: var(--color-text-muted);">
+                                By submitting, you confirm this is a genuine medical emergency
+                            </p>
+                        </div>
+                    </form>
+
+                    <!-- Success Message -->
+                    <div id="successMessage" style="display: none;" class="card__body">
+                        <div class="alert alert--success">
+                            <h3 style="margin-top: 0; margin-bottom: 0.5rem; color: var(--color-success);">
+                                Emergency Report Submitted Successfully
+                            </h3>
+                            <p style="margin-bottom: 1rem; font-weight: 600;">
+                                Your emergency report has been sent to railway authorities. Medical assistance is being arranged at the nearest station.
+                            </p>
+                            <div style="background-color: var(--color-bg-alt); padding: 1rem; border-radius: var(--border-radius); margin: 1rem 0;">
+                                <p style="margin: 0;">
+                                    <strong>Report ID:</strong> <span id="reportId" style="font-family: monospace; font-weight: 700; color: var(--color-primary);"></span>
+                                </p>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem;">
+                                    Please note this Report ID for reference
+                                </p>
+                            </div>
+                            <div id="trackingInfo" style="margin-top: 1rem;"></div>
+                            <div style="margin-top: 1.5rem;">
+                                <a href="/" class="btn btn--primary">Return to Home</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Important Information -->
+                <div class="card card--alt" style="margin-top: 2rem;">
+                    <div class="card__body">
+                        <h3 style="margin-top: 0; margin-bottom: 1rem;">Important Information</h3>
+                        <ul style="margin-left: 1.5rem; margin-bottom: 0;">
+                            <li style="margin-bottom: 0.5rem;">
+                                <strong>For immediate life-threatening emergencies:</strong> Call <a href="tel:112">112</a> (National Emergency) or <a href="tel:139">139</a> (Railway Helpline)
+                            </li>
+                            <li style="margin-bottom: 0.5rem;">
+                                Medical team will be arranged at the nearest railway station based on train location
+                            </li>
+                            <li style="margin-bottom: 0.5rem;">
+                                Keep your mobile phone accessible for updates from railway authorities
+                            </li>
+                            <li style="margin-bottom: 0;">
+                                False emergency reports are punishable under law
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>Emergency Contacts</h3>
+                    <ul>
+                        <li><a href="tel:139">Railway Helpline: 139</a></li>
+                        <li><a href="tel:112">National Emergency: 112</a></li>
+                        <li><a href="tel:108">Ambulance: 108</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/emergency">Report Emergency</a></li>
+                        <li><a href="/train_search">Search Trains</a></li>
+                        <li><a href="/admin_login">Admin Login</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>&copy; 2024 Railway Medical Emergency Response System. Ministry of Railways.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Translations Data -->
+    <script id="translations-data" type="application/json">{{ translations | tojson }}</script>
+    
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/location-enhanced.js') }}"></script>
+    <script>
+        // Language Switcher
+        document.getElementById('langBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('langDropdown');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            dropdown.classList.toggle('lang-switcher__dropdown--show');
+            this.setAttribute('aria-expanded', !isExpanded);
+        });
+        
+        document.addEventListener('click', function(e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('lang-switcher__dropdown--show');
+                langBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Phone number validation - numbers only
+        document.getElementById('phone').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // Enhanced Location Detection
+        document.getElementById('getLocation').addEventListener('click', async function() {
+            const statusEl = document.getElementById('locationStatus');
+            const locationInput = document.getElementById('location');
+            const locationLat = document.getElementById('location_lat');
+            const locationLng = document.getElementById('location_lng');
+            const button = this;
+            
+            button.disabled = true;
+            button.textContent = '📍 Getting Location...';
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = '<span style="color: var(--info);">⏳ Detecting your location...</span>';
+            
+            try {
+                const locationData = await window.locationService.getAccurateLocation();
+                
+                // Store location data
+                locationInput.value = locationData.full;
+                locationLat.value = locationData.coords.latitude;
+                locationLng.value = locationData.coords.longitude;
+                
+                // Display location
+                statusEl.innerHTML = `
+                    <div style="color: var(--success);">
+                        <strong>✅ Location Captured Successfully</strong><br>
+                        <span style="font-size: 0.875rem;">
+                            📍 ${locationData.name}<br>
+                            <small style="color: var(--text-muted);">
+                                Coordinates: ${locationData.coords.latitude.toFixed(6)}, ${locationData.coords.longitude.toFixed(6)}
+                                ${locationData.coords.accuracy ? `(Accuracy: ±${Math.round(locationData.coords.accuracy)}m)` : ''}
+                            </small>
+                        </span>
+                    </div>
+                `;
+                
+                button.textContent = '📍 Location Captured ✓';
+                button.classList.remove('btn--outline');
+                button.classList.add('btn--success');
+                
+            } catch (error) {
+                statusEl.innerHTML = `
+                    <div style="color: var(--error);">
+                        <strong>⚠️ Location Not Available</strong><br>
+                        <small style="color: var(--text-muted);">${error.message}. You can still submit the form without location.</small>
+                    </div>
+                `;
+                button.textContent = '📍 Get Current Location';
+                button.disabled = false;
+            }
+        });
+
+        // Form Submission
+        document.getElementById('emergencyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check if user is logged in (check session via cookie or redirect)
+            const formData = {
+                passenger_name: document.getElementById('passenger_name').value,
+                phone: document.getElementById('phone').value,
+                train_number: document.getElementById('train_number').value,
+                coach: document.getElementById('coach').value,
+                seat: document.getElementById('seat').value,
+                emergency_type: document.getElementById('emergency_type').value,
+                description: document.getElementById('description').value,
+                location: document.getElementById('location').value || 'Unknown',
+                location_lat: document.getElementById('location_lat').value || null,
+                location_lng: document.getElementById('location_lng').value || null
+            };
+            
+            fetch('/submit_emergency', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('emergencyForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('reportId').textContent = 'REP-' + data.report_id;
+                    
+                    if (data.nearest_stations && data.nearest_stations.length > 0) {
+                        const trackingInfo = document.getElementById('trackingInfo');
+                        trackingInfo.innerHTML = '<h4 style="margin-bottom: 0.5rem;">Nearest Stations:</h4><ul style="margin-left: 1.5rem;">' +
+                            data.nearest_stations.slice(0, 3).map(station => 
+                                `<li>${station.name} (${station.distance_km} km away)</li>`
+                            ).join('') + '</ul>';
+                    }
+                    
+                    // Scroll to success message
+                    document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    alert('Error submitting emergency report: ' + (data.message || 'Please try again'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting emergency report. Please try again or call emergency helpline.');
+            });
+        });
+    </script>
+</body>
+</html>

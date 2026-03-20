@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations.get('user_dashboard', 'User Dashboard') }} - {{ translations.get('railway_emergency_system',
+        'Railway Emergency System') }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <a href="/" class="site-header__logo">
+                    <div class="site-header__logo-icon">👤</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">{{ translations.get('railway_emergency_system', 'Railway
+                            Emergency System') }}</h1>
+                        <p class="site-header__logo-subtitle">{{ translations.get('passenger_dashboard', 'Passenger
+                            Dashboard') }} - {{ translations.get('welcome', 'Welcome') }}, {{ username }}</p>
+                    </div>
+                </a>
+
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link">{{ translations.get('home', 'Home') }}</a>
+                    <a href="/emergency" class="site-header__nav-link">{{ translations.get('report_emergency', 'Report
+                        Emergency') }}</a>
+                    <a href="/user_dashboard" class="site-header__nav-link site-header__nav-link--active">{{
+                        translations.get('dashboard', 'Dashboard') }}</a>
+                    <a href="/train_search" class="site-header__nav-link">{{ translations.get('search_trains', 'Search
+                        Trains') }}</a>
+                </nav>
+
+                <div class="site-header__actions">
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language"
+                            aria-expanded="false">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}"
+                                class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="/logout" class="btn btn--secondary"
+                        style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">{{
+                        translations.get('logout', 'Logout') }}</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <section class="section">
+            <div class="container">
+                <!-- Page Header -->
+                <div style="margin-bottom: var(--space-8);">
+                    <h1>{{ translations.get('emergency_services_dashboard', 'Emergency Services Dashboard') }}</h1>
+                    <p style="color: var(--text-secondary);">{{ translations.get('emergency_services_desc', 'Quick
+                        access to emergency reporting and assistance services') }}</p>
+                </div>
+
+                <!-- SOS Emergency Section -->
+                <div class="card" style="border: 3px solid var(--error); margin-bottom: var(--space-6);">
+                    <div class="card__header"
+                        style="background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); border-bottom: 2px solid var(--error);">
+                        <h2 style="color: var(--error); margin: 0;">🚨 {{ translations.get('sos_alert_title', 'EMERGENCY
+                            SOS ALERT') }}</h2>
+                        <p style="margin: var(--space-2) 0 0 0; color: var(--text-secondary);">{{
+                            translations.get('life_threatening_warning', 'For immediate life-threatening situations,
+                            fire, or serious accidents') }}</p>
+                    </div>
+                    <div class="card__body" style="text-align: center; padding: var(--space-8);">
+                        <p style="margin-bottom: var(--space-6); font-size: 1.125rem;">
+                            {{ translations.get('sos_instruction', 'Use SOS Alert only for critical emergencies
+                            requiring immediate response') }}
+                        </p>
+                        <button id="sosButton" class="btn btn--danger btn--large" onclick="sendSOSAlert()"
+                            style="min-width: 300px;">
+                            🚨 {{ translations.get('send_sos_alert', 'SEND SOS ALERT') }}
+                        </button>
+                        <p
+                            style="margin-top: var(--space-4); margin-bottom: 0; font-size: 0.875rem; color: var(--text-muted);">
+                            <strong>{{ translations.get('emergency_helpline', 'Emergency Helpline') }}:</strong> {{
+                            translations.get('call', 'Call') }} <a href="tel:139" style="font-weight: 700;">139</a> ({{
+                            translations.get('railway', 'Railway') }}) {{ translations.get('or', 'or') }} <a
+                                href="tel:112" style="font-weight: 700;">112</a> ({{
+                            translations.get('national_emergency', 'National Emergency') }})
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8);">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>{{ translations.get('medical_emergency', 'Medical Emergency') }}</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: var(--space-4);">{{ translations.get('report_emergency_desc',
+                                'Report medical emergencies during your train journey') }}</p>
+                            <a href="/emergency" class="btn btn--primary btn--block">{{
+                                translations.get('report_emergency', 'Report Emergency') }}</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>{{ translations.get('track_train', 'Track My Train') }}</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: var(--space-4);">{{ translations.get('track_train_desc', 'Get
+                                current location and status of your train') }}</p>
+                            <a href="/train_search" class="btn btn--outline btn--block">{{
+                                translations.get('search_trains', 'Search Trains') }}</a>
+                            <a href="/train_tracker" class="btn btn--outline btn--block"
+                                style="margin-top: var(--space-2);">{{ translations.get('advanced_tracker', 'Advanced
+                                Tracker') }}</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>{{ translations.get('my_reports', 'My Reports') }}</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: var(--space-4);">{{ translations.get('view_reports_desc', 'View
+                                your submitted emergency reports') }}</p>
+                            <button class="btn btn--outline btn--block" onclick="viewMyReports()">{{
+                                translations.get('view_reports', 'View Reports') }}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Location Display -->
+                <div class="card" id="locationCard" style="display: none;">
+                    <div class="card__header">
+                        <h3>📍 {{ translations.get('current_location', 'Current Location') }}</h3>
+                    </div>
+                    <div class="card__body">
+                        <div id="currentLocationDisplay"></div>
+                        <button class="btn btn--outline" onclick="updateLocation()"
+                            style="margin-top: var(--space-4);">{{ translations.get('refresh_location', 'Refresh
+                            Location') }}</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>Passenger Services</h3>
+                    <ul>
+                        <li><a href="/emergency">Report Emergency</a></li>
+                        <li><a href="/train_search">Search Trains</a></li>
+                        <li><a href="/train_tracker">Track Train</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Emergency Contacts</h3>
+                    <ul>
+                        <li><a href="tel:139">Railway Emergency: 139</a></li>
+                        <li><a href="tel:112">National Emergency: 112</a></li>
+                        <li><a href="tel:108">Ambulance: 108</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>{{ translations.get('copyright', '&copy; 2024 Railway Medical Emergency Response System. Ministry of
+                    Railways.') }}</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Translations Data -->
+    <script id="translations-data" type="application/json">{{ translations | tojson }}</script>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/location-enhanced.js') }}"></script>
+    <script>
+        // Language Switcher
+        document.getElementById('langBtn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('langDropdown');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            dropdown.classList.toggle('lang-switcher__dropdown--show');
+            this.setAttribute('aria-expanded', !isExpanded);
+        });
+
+        document.addEventListener('click', function (e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('lang-switcher__dropdown--show');
+                langBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Get and display current location
+        async function updateLocation() {
+            const locationCard = document.getElementById('locationCard');
+            const locationDisplay = document.getElementById('currentLocationDisplay');
+
+            locationCard.style.display = 'block';
+            locationDisplay.innerHTML = '<p style="color: var(--info);">⏳ Detecting location...</p>';
+
+            try {
+                const locationData = await window.locationService.getAccurateLocation();
+                locationDisplay.innerHTML = `
+                    <div style="padding: var(--space-4); background: var(--gray-50); border-radius: var(--radius);">
+                        <p style="margin: 0 0 var(--space-2) 0;"><strong>📍 Location:</strong> ${locationData.name}</p>
+                        <p style="margin: 0; font-size: 0.875rem; color: var(--text-muted);">
+                            Coordinates: ${locationData.coords.latitude.toFixed(6)}, ${locationData.coords.longitude.toFixed(6)}
+                            ${locationData.coords.accuracy ? `(Accuracy: ±${Math.round(locationData.coords.accuracy)}m)` : ''}
+                        </p>
+                    </div>
+                `;
+            } catch (error) {
+                locationDisplay.innerHTML = `<p style="color: var(--error);">⚠️ ${error.message}</p>`;
+            }
+        }
+
+        // Auto-detect location on page load
+        updateLocation();
+
+        // SOS Alert
+        async function sendSOSAlert() {
+            if (!confirm({{ translations.get('sos_confirm_message', '🚨 CONFIRM SOS ALERT\n\nThis will immediately alert railway authorities. Use only for:\n- Fire in train\n- Serious accidents\n- Life-threatening emergencies\n\nProceed?') | tojson }})) {
+            return;
+        }
+
+        const button = document.getElementById('sosButton');
+        button.disabled = true;
+        button.textContent = {{ translations.get('sending_sos', '⏳ Sending SOS...') | tojson }};
+
+        try {
+            // Get location
+            let locationData = null;
+            try {
+                locationData = await window.locationService.getAccurateLocation();
+            } catch (e) {
+                console.log('Location not available:', e);
+            }
+
+            const trainNumber = prompt('Enter Train Number:') || 'Unknown';
+            const coach = prompt('Enter Coach Number:') || 'Unknown';
+            const seat = prompt('Enter Seat Number:') || 'Unknown';
+
+            const sosData = {
+                emergency_type: 'sos',
+                passenger_name: '{{ username }}',
+                phone: 'Emergency',
+                train_number: trainNumber,
+                coach: coach,
+                seat: seat,
+                description: 'SOS EMERGENCY ALERT - Immediate assistance required',
+                location: locationData ? locationData.full : 'Location unavailable',
+                location_lat: locationData ? locationData.coords.latitude : null,
+                location_lng: locationData ? locationData.coords.longitude : null
+            };
+
+            const response = await fetch('/submit_emergency', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sosData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(`🚨 SOS ALERT SENT!| tojson | safe}}n| tojson | safe}}nReport ID: #${result.report_id}| tojson | safe}}n${locationData ? `Location: ${locationData.name}| tojson | safe}}n` : ''}| tojson | safe}}nRailway authorities and nearby stations have been notified immediately. Help is on the way!`);
+                button.textContent = '✅ SOS Sent Successfully';
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = '🚨 SEND SOS ALERT';
+                }, 5000);
+            } else {
+                alert('❌ Failed to send SOS alert: ' + (result.message || 'Please try again or call 139'));
+                button.disabled = false;
+                button.textContent = '🚨 SEND SOS ALERT';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error sending SOS alert. Please call 139 immediately.');
+            button.disabled = false;
+            button.textContent = '🚨 SEND SOS ALERT';
+        }
+        }
+
+        function viewMyReports() {
+            fetch('/api/my_reports')
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            alert('Please login to view your reports.');
+                            window.location.href = '/login';
+                            return;
+                        }
+                        throw new Error('Failed to load reports');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    if (data.success && data.reports.length > 0) {
+                        showReportsModal(data.reports);
+                    } else {
+                        alert('No emergency reports found.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load reports. Please try again.');
+                });
+        }
+
+        function showReportsModal(reports) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto; padding: 20px;';
+
+            const emergencyIcons = {
+                'heart_attack': '❤️',
+                'breathing_difficulty': '🫁',
+                'severe_pain': '😣',
+                'unconscious': '😵',
+                'injury_accident': '🤕',
+                'high_fever': '🤒',
+                'sos': '🚨',
+                'other': '⚕️'
+            };
+
+            const statusColors = {
+                'pending': 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                'in_progress': 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                'resolved': 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
+            };
+
+            let reportsHTML = `
+                <div style="max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; padding: 30px; position: relative;">
+                    <button onclick="this.closest('div').parentElement.remove()" style="position: absolute; top: 20px; right: 20px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">&times;</button>
+                    <h2 style="margin: 0 0 30px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2rem;">📋 My Emergency Reports</h2>
+                    <div style="display: grid; gap: 20px;">
+            `;
+
+            reports.forEach(report => {
+                const icon = emergencyIcons[report.emergency_type] || '⚕️';
+                const statusBg = statusColors[report.status] || statusColors['pending'];
+                const date = new Date(report.timestamp).toLocaleString();
+
+                reportsHTML += `
+                    <div class="card" style="background: ${statusBg}; border: 2px solid rgba(0,0,0,0.1); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="display: flex; gap: 20px; align-items: start;">
+                            <div style="font-size: 4rem; line-height: 1;">${icon}</div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                                    <div>
+                                        <h3 style="margin: 0 0 5px 0; font-size: 1.5rem; color: #111827;">${report.emergency_type.replace(/_/g, ' ').toUpperCase()}</h3>
+                                        <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Report #${report.id} • ${date}</p>
+                                    </div>
+                                    <span style="padding: 6px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; background: white; color: ${report.status === 'resolved' ? '#065f46' : report.status === 'in_progress' ? '#1e40af' : '#92400e'};">${report.status.replace('_', ' ')}</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                                    <div style="background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;">
+                                        <p style="margin: 0; font-size: 0.75rem; color: #6b7280; font-weight: 600;">🚂 TRAIN</p>
+                                        <p style="margin: 5px 0 0 0; font-size: 1rem; font-weight: 700; color: #111827;">${report.train_number}</p>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;">
+                                        <p style="margin: 0; font-size: 0.75rem; color: #6b7280; font-weight: 600;">🪑 SEAT</p>
+                                        <p style="margin: 5px 0 0 0; font-size: 1rem; font-weight: 700; color: #111827;">${report.coach} - ${report.seat}</p>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;">
+                                        <p style="margin: 0; font-size: 0.75rem; color: #6b7280; font-weight: 600;">📞 PHONE</p>
+                                        <p style="margin: 5px 0 0 0; font-size: 1rem; font-weight: 700; color: #111827;">${report.phone}</p>
+                                    </div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                                    <p style="margin: 0; font-size: 0.75rem; color: #6b7280; font-weight: 600; margin-bottom: 5px;">📝 DESCRIPTION</p>
+                                    <p style="margin: 0; color: #374151; line-height: 1.6;">${report.description}</p>
+                                </div>
+                                ${report.location ? `<div style="background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;">
+                                    <p style="margin: 0; font-size: 0.75rem; color: #6b7280; font-weight: 600;">📍 LOCATION</p>
+                                    <p style="margin: 5px 0 0 0; color: #374151;">${report.location}</p>
+                                </div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            reportsHTML += `
+                    </div>
+                </div>
+            `;
+
+            modal.innerHTML = reportsHTML;
+            document.body.appendChild(modal);
+        }
+    </script>
+</body>
+
+</html>

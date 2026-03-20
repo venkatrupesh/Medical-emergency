@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Train Tracker - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .train-tracker-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 20px;
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 30px auto;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 20px 60px 20px 20px;
+            font-size: 1.125rem;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: white;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+        }
+        
+        .train-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .train-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .train-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+        
+        .train-card:hover::before {
+            left: 100%;
+        }
+        
+        .train-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .train-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .train-type {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .train-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 10px 0;
+        }
+        
+        .train-route {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
+            border-radius: 12px;
+        }
+        
+        .station {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .station-name {
+            font-weight: 700;
+            color: #111827;
+            font-size: 1.125rem;
+            margin-bottom: 5px;
+        }
+        
+        .station-time {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .route-arrow {
+            font-size: 2rem;
+            color: #667eea;
+            animation: slideRight 2s ease-in-out infinite;
+        }
+        
+        @keyframes slideRight {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+        
+        .train-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .status-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #10b981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .quick-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: 10px 25px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.125rem;
+            color: #667eea;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="site-header__inner">
+                <a href="/" class="site-header__logo">
+                    <div class="site-header__logo-icon">🚂</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">Live Train Tracker</h1>
+                        <p class="site-header__logo-subtitle">Real-time Train Information</p>
+                    </div>
+                </a>
+                <nav class="site-header__nav">
+                    <a href="/" class="site-header__nav-link">Home</a>
+                    <a href="/train_search" class="site-header__nav-link site-header__nav-link--active">Train Search</a>
+                    <a href="/emergency" class="site-header__nav-link">Emergency</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="train-tracker-hero fade-in">
+            <h1 style="font-size: 3rem; margin: 0 0 10px 0;">🚄 Live Train Tracker</h1>
+            <p style="font-size: 1.25rem; opacity: 0.95; margin: 0;">Search and track trains in real-time across India</p>
+            
+            <div class="search-box">
+                <input type="text" id="trainSearch" class="search-input" placeholder="Enter train number or name (e.g., 12301 or Rajdhani)">
+                <span class="search-icon">🔍</span>
+            </div>
+            
+            <div class="quick-filters">
+                <button class="filter-btn active" onclick="filterTrains('all')">All Trains</button>
+                <button class="filter-btn" onclick="filterTrains('rajdhani')">Rajdhani</button>
+                <button class="filter-btn" onclick="filterTrains('shatabdi')">Shatabdi</button>
+                <button class="filter-btn" onclick="filterTrains('duronto')">Duronto</button>
+                <button class="filter-btn" onclick="filterTrains('express')">Express</button>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="container">
+                <div id="searchResults"></div>
+                <div id="popularTrains"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="site-footer__bottom">
+                <p>&copy; 2024 Railway Medical Emergency Response System. Ministry of Railways.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let allTrains = [];
+        let currentFilter = 'all';
+        let searchTimeout;
+
+        document.getElementById('trainSearch').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                displayPopularTrains();
+                return;
+            }
+
+            document.getElementById('searchResults').innerHTML = '<div class="loading"><div class="spinner"></div><br>Searching trains...</div>';
+            
+            searchTimeout = setTimeout(() => {
+                searchTrains(query);
+            }, 300);
+        });
+
+        function searchTrains(query) {
+            fetch(`/search_trains?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    allTrains = data.trains;
+                    displayTrains(data.trains);
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    document.getElementById('searchResults').innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div><h3>Error loading trains</h3></div>';
+                });
+        }
+
+        function filterTrains(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (type === 'all') {
+                displayTrains(allTrains);
+            } else {
+                const filtered = allTrains.filter(train => 
+                    train.name.toLowerCase().includes(type.toLowerCase())
+                );
+                displayTrains(filtered);
+            }
+        }
+
+        function displayTrains(trains) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (trains.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results fade-in"><div class="no-results-icon">🔍</div><h3>No trains found</h3><p>Try searching with a different train number or name</p></div>';
+                return;
+            }
+
+            const html = trains.map((train, index) => {
+                const trainType = train.name.includes('Rajdhani') ? 'Rajdhani' : 
+                                 train.name.includes('Shatabdi') ? 'Shatabdi' :
+                                 train.name.includes('Duronto') ? 'Duronto' : 'Express';
+                
+                return `
+                    <div class="train-card fade-in-delay-${Math.min(index, 3)}" onclick="showTrainDetails('${train.number}')">
+                        <div class="train-header">
+                            <div class="train-number">🚂 ${train.number}</div>
+                            <div class="train-type">${trainType}</div>
+                        </div>
+                        <div class="train-name">${train.name}</div>
+                        <div class="train-route">
+                            <div class="station">
+                                <div class="station-name">📍 ${train.source}</div>
+                                <div class="station-time">Origin</div>
+                            </div>
+                            <div class="route-arrow">→</div>
+                            <div class="station">
+                                <div class="station-name">🎯 ${train.destination}</div>
+                                <div class="station-time">Destination</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <span class="live-indicator">
+                                <span class="live-dot"></span>
+                                LIVE TRACKING AVAILABLE
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function showTrainDetails(trainNumber) {
+            window.location.href = `/track_train/${trainNumber}`;
+        }
+
+        function displayPopularTrains() {
+            const container = document.getElementById('popularTrains');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading popular trains...</div>';
+            
+            fetch('/popular_trains')
+                .then(response => response.json())
+                .then(data => {
+                    allTrains = data.trains;
+                    document.getElementById('searchResults').innerHTML = '';
+                    
+                    const html = `
+                        <h2 style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            🔥 Popular Trains
+                        </h2>
+                    `;
+                    container.innerHTML = html;
+                    displayTrains(data.trains);
+                });
+        }
+
+        // Load popular trains on page load
+        document.addEventListener('DOMContentLoaded', displayPopularTrains);
+    </script>
+</body>
+</html>

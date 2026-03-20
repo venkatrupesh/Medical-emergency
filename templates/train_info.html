@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Information - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+</head>
+<body>
+    <!-- Government Header -->
+    <div class="gov-header"></div>
+    
+    <header class="main-header">
+        <div class="header-main">
+            <div class="container">
+                <div class="header-content">
+                    <div class="emblem"></div>
+                    <div class="title-section">
+                        <h1>Live Train Information</h1>
+                        <div class="subtitle">लाइव ट्रेन जानकारी</div>
+                        <div class="ministry">Ministry of Railways, Government of India</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-title fade-in">
+                <h2 id="trainTitle">🚂 Loading Train Information...</h2>
+                <p>Real-time train tracking and location details</p>
+            </div>
+
+            <!-- Train Status Card -->
+            <div class="train-status-card slide-up">
+                <div class="status-header">
+                    <div class="train-number-display" id="trainNumber">---</div>
+                    <div class="live-indicator-container">
+                        <span class="live-indicator"></span>
+                        <span>LIVE</span>
+                    </div>
+                </div>
+                
+                <div class="train-name" id="trainName">Loading...</div>
+                
+                <div class="route-info">
+                    <div class="route-stations">
+                        <div class="station-point source" id="sourceStation">---</div>
+                        <div class="route-line-container">
+                            <div class="route-line"></div>
+                            <div class="train-position" id="trainIcon">🚂</div>
+                        </div>
+                        <div class="station-point destination" id="destStation">---</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Metrics -->
+            <div class="metrics-grid fade-in">
+                <div class="metric-card speed">
+                    <div class="metric-icon">⚡</div>
+                    <div class="metric-value" id="trainSpeed">0</div>
+                    <div class="metric-label">km/h</div>
+                </div>
+                
+                <div class="metric-card location">
+                    <div class="metric-icon">📍</div>
+                    <div class="metric-value" id="currentLocation">Loading...</div>
+                    <div class="metric-label">Current Location</div>
+                </div>
+                
+                <div class="metric-card next-station">
+                    <div class="metric-icon">🏁</div>
+                    <div class="metric-value" id="nextStation">---</div>
+                    <div class="metric-label">Next Station</div>
+                </div>
+                
+                <div class="metric-card coordinates">
+                    <div class="metric-icon">🌐</div>
+                    <div class="metric-value" id="coordinates">---, ---</div>
+                    <div class="metric-label">Coordinates</div>
+                </div>
+            </div>
+
+            <!-- Nearby Stations -->
+            <div class="nearby-stations-section slide-up">
+                <h3>🏢 Nearby Railway Stations</h3>
+                <div id="nearbyStations" class="stations-grid">
+                    <div class="loading-placeholder">Loading nearby stations...</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons fade-in">
+                <button class="btn-gov btn-enhanced" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="btn-gov-secondary btn-enhanced" onclick="reportEmergency()">🚨 Report Emergency</button>
+                <button class="btn-gov-secondary btn-enhanced" onclick="goBack()">← Back</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let trainNumber = new URLSearchParams(window.location.search).get('train') || 
+                         window.location.pathname.split('/').pop();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrainData();
+            // Auto-refresh every 30 seconds
+            setInterval(loadTrainData, 30000);
+        });
+
+        function loadTrainData() {
+            if (!trainNumber) {
+                document.getElementById('trainTitle').textContent = '❌ No train number provided';
+                return;
+            }
+
+            fetch(`/track_train/${trainNumber}?format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayTrainData(data);
+                    } else {
+                        showError(data.message || 'Train not found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Failed to load train data');
+                });
+        }
+
+        function displayTrainData(data) {
+            const train = data.train_location;
+            const stations = data.nearest_stations || [];
+
+            // Update header
+            document.getElementById('trainTitle').textContent = 
+                `🚂 ${train.train_name} (${train.train_number})`;
+            
+            // Update train info
+            document.getElementById('trainNumber').textContent = train.train_number;
+            document.getElementById('trainName').textContent = train.train_name;
+            document.getElementById('sourceStation').textContent = train.last_station || 'Unknown';
+            document.getElementById('destStation').textContent = train.next_station || 'Unknown';
+            
+            // Update metrics
+            document.getElementById('trainSpeed').textContent = Math.round(train.speed || 0);
+            document.getElementById('currentLocation').textContent = 
+                `${train.latitude?.toFixed(4) || '0'}, ${train.longitude?.toFixed(4) || '0'}`;
+            document.getElementById('nextStation').textContent = train.next_station || 'Unknown';
+            document.getElementById('coordinates').textContent = 
+                `${train.latitude?.toFixed(4) || '0'}, ${train.longitude?.toFixed(4) || '0'}`;
+
+            // Animate train position
+            animateTrainPosition(train.speed || 0);
+            
+            // Display nearby stations
+            displayNearbyStations(stations);
+        }
+
+        function animateTrainPosition(speed) {
+            const trainIcon = document.getElementById('trainIcon');
+            const speedFactor = Math.min(speed / 100, 1); // Normalize speed
+            const position = 20 + (speedFactor * 60); // 20% to 80% of route
+            
+            trainIcon.style.left = position + '%';
+            trainIcon.style.animation = speed > 0 ? 'trainMove 3s ease-in-out infinite' : 'none';
+        }
+
+        function displayNearbyStations(stations) {
+            const container = document.getElementById('nearbyStations');
+            
+            if (stations.length === 0) {
+                container.innerHTML = '<div class="no-stations">No nearby stations found</div>';
+                return;
+            }
+
+            const html = stations.map(station => `
+                <div class="station-card">
+                    <div class="station-header">
+                        <h4>${station.name}</h4>
+                        <span class="distance-badge">${station.distance_km} km</span>
+                    </div>
+                    <div class="station-details">
+                        <p><strong>Code:</strong> ${station.code || 'N/A'}</p>
+                        <p><strong>Contact:</strong> ${station.contact}</p>
+                        <p><strong>Medical:</strong> 
+                            <span class="facility-status ${station.medical_facility === 'available' ? 'available' : 'unavailable'}">
+                                ${station.medical_facility === 'available' ? '✅ Available' : '❌ Not Available'}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function showError(message) {
+            document.getElementById('trainTitle').textContent = '❌ Error Loading Train Data';
+            document.querySelector('.train-status-card').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #dc3545;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🚫</div>
+                    <h3>${message}</h3>
+                    <p>Please check the train number and try again.</p>
+                </div>
+            `;
+        }
+
+        function refreshData() {
+            document.getElementById('trainTitle').textContent = '🔄 Refreshing...';
+            loadTrainData();
+        }
+
+        function reportEmergency() {
+            window.location.href = `/emergency?train=${trainNumber}`;
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+
+    <style>
+        .train-status-card {
+            background: linear-gradient(135deg, #2c5aa0, #1e3d6f);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .train-number-display {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .live-indicator-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(40, 167, 69, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .train-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .route-stations {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .station-point {
+            background: rgba(255,255,255,0.9);
+            color: #2c5aa0;
+            padding: 15px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 150px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .route-line-container {
+            flex: 1;
+            position: relative;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            margin: 0 20px;
+            border-radius: 3px;
+        }
+
+        .route-line {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107);
+            border-radius: 3px;
+        }
+
+        .train-position {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            font-size: 30px;
+            transform: translateX(-50%);
+            z-index: 3;
+            transition: left 2s ease-in-out;
+        }
+
+        @keyframes trainMove {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .nearby-stations-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nearby-stations-section h3 {
+            color: #2c5aa0;
+            margin-bottom: 20px;
+        }
+
+        .stations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .station-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .station-card:hover {
+            border-color: #2c5aa0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .station-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .station-header h4 {
+            color: #2c5aa0;
+            margin: 0;
+        }
+
+        .distance-badge {
+            background: #FF9933;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .station-details p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .facility-status.available {
+            color: #28a745;
+        }
+
+        .facility-status.unavailable {
+            color: #dc3545;
+        }
+
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .action-buttons button {
+            margin: 0 10px;
+        }
+
+        .loading-placeholder, .no-stations {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .route-stations {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .route-line-container {
+                width: 6px;
+                height: 50px;
+                margin: 0;
+            }
+            
+            .train-position {
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+    </style>
+
+    <script src="{{ url_for('static', filename='js/interactive-features.js') }}"></script>
+</body>
+</html>

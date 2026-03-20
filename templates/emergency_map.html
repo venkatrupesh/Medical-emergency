@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Location Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🗺️ Emergency Location Tracking</h1>
+            <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="emergency-info">
+            <h2>Emergency Report #{{ report[0] }}</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>👤 Passenger Details</h3>
+                    <p><strong>Name:</strong> {{ report[1] }}</p>
+                    <p><strong>Phone:</strong> {{ report[2] }}</p>
+                    <p><strong>Emergency:</strong> {{ report[6] }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>🚂 Train Information</h3>
+                    <p><strong>Train:</strong> {{ train_location.train_name }} ({{ report[3] }})</p>
+                    <p><strong>Coach:</strong> {{ report[4] }}</p>
+                    <p><strong>Seat:</strong> {{ report[5] }}</p>
+                    <p><strong>Speed:</strong> {{ train_location.speed }} km/h</p>
+                </div>
+                <div class="info-card">
+                    <h3>📍 Current Location</h3>
+                    <p><strong>Coordinates:</strong> {{ train_location.latitude }}, {{ train_location.longitude }}</p>
+                    <p><strong>Last Station:</strong> {{ train_location.last_station }}</p>
+                    <p><strong>Next Station:</strong> {{ train_location.next_station }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div class="simple-map">
+                <h3>🗺️ Train Location Tracking</h3>
+                <div class="location-display">
+                    <p><strong>📍 Current Coordinates:</strong> {{ train_location.latitude }}, {{ train_location.longitude }}</p>
+                    <p><strong>🚂 Train Speed:</strong> {{ train_location.speed }} km/h</p>
+                    <p><strong>📍 Last Station:</strong> {{ train_location.last_station }}</p>
+                    <p><strong>📍 Next Station:</strong> {{ train_location.next_station }}</p>
+                    <div class="route-line">
+                        <span class="station-point">{{ train_location.last_station }}</span>
+                        <span class="train-icon">🚂+</span>
+                        <span class="station-point">{{ train_location.next_station }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nearby-stations">
+            <h3>🏥 Nearest Medical Stations</h3>
+            {% for station in nearest_stations %}
+            <div class="station-card">
+                <h4>{{ station.name }} ({{ station.code }})</h4>
+                <p><strong>Distance:</strong> {{ station.distance_km }} km</p>
+                <p><strong>Contact:</strong> {{ station.contact }}</p>
+                <p><strong>Medical Facility:</strong> {{ station.medical_facility }}</p>
+                <button onclick="alertStation('{{ station.name }}', '{{ station.contact }}')" class="btn emergency-btn">
+                    🚨 Alert This Station
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        function alertStation(stationName, contact) {
+            alert(`EMERGENCY ALERT SENT TO ${stationName}| tojson | safe}}n| tojson | safe}}nContact: ${contact}| tojson | safe}}n| tojson | safe}}nMedical team is being dispatched to assist Train {{ report[3] }}.`);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

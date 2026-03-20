@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Database - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Government Header -->
+    <div class="gov-header"></div>
+    
+    <header class="main-header">
+        <div class="header-main">
+            <div class="container">
+                <div class="header-content">
+                    <div class="emblem"></div>
+                    <div class="title-section">
+                        <h1>Railway Train Database</h1>
+                        <div class="subtitle">रेलवे ट्रेन डेटाबेस</div>
+                        <div class="ministry">Ministry of Railways, Government of India</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="gov-nav">
+        <div class="container">
+            <div class="nav-content">
+                <ul class="nav-menu">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/train_database" class="active">Train Database</a></li>
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/authority_dashboard">Authority Portal</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-title">
+                <h2>🚂 Comprehensive Train Database</h2>
+                <p>Search and explore 100+ trains across India with detailed route information</p>
+            </div>
+
+            <!-- Search Section -->
+            <div class="stats-section">
+                <div class="stats-header">
+                    <h3>🔍 Search Trains</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <input type="text" id="trainSearch" placeholder="Search by train number or name..." 
+                               style="flex: 1; min-width: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 3px;">
+                        <button onclick="searchTrains()" class="btn-gov">Search</button>
+                        <button onclick="showAllTrains()" class="btn-gov-secondary">Show All</button>
+                    </div>
+                    
+                    <!-- Filter Options -->
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="filterByType('Rajdhani')" class="filter-tab">Rajdhani</button>
+                        <button onclick="filterByType('Shatabdi')" class="filter-tab">Shatabdi</button>
+                        <button onclick="filterByType('Duronto')" class="filter-tab">Duronto</button>
+                        <button onclick="filterByType('Express')" class="filter-tab">Express</button>
+                        <button onclick="filterByType('Mail')" class="filter-tab">Mail</button>
+                        <button onclick="filterByType('Garib Rath')" class="filter-tab">Garib Rath</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Train Results -->
+            <div class="stats-section">
+                <div class="stats-header">
+                    <h3 id="resultsTitle">🚆 All Trains (Loading...)</h3>
+                </div>
+                <div id="trainResults" style="padding: 20px;">
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🔄</div>
+                        <p>Loading train database...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="gov-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Train Services</h4>
+                    <ul>
+                        <li><a href="/train_database">Train Database</a></li>
+                        <li><a href="/train_search">Train Search</a></li>
+                        <li><a href="#">Live Tracking</a></li>
+                        <li><a href="#">Route Information</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Emergency Services</h4>
+                    <ul>
+                        <li><a href="/emergency">Report Emergency</a></li>
+                        <li><a href="tel:139">Railway Emergency: 139</a></li>
+                        <li><a href="tel:1072">Medical Emergency: 1072</a></li>
+                        <li><a href="/authority_dashboard">Authority Portal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Ministry of Railways, Government of India. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let allTrains = [];
+        let filteredTrains = [];
+
+        // Load all trains on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllTrains();
+        });
+
+        function loadAllTrains() {
+            fetch('/api/all_trains')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        allTrains = data.trains;
+                        filteredTrains = allTrains;
+                        displayTrains(allTrains);
+                        updateResultsTitle(`All Trains (${allTrains.length})`);
+                    } else {
+                        showError('Failed to load train database');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Error loading train database');
+                });
+        }
+
+        function searchTrains() {
+            const query = document.getElementById('trainSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                showAllTrains();
+                return;
+            }
+
+            filteredTrains = allTrains.filter(train => 
+                train.number.toLowerCase().includes(query) || 
+                train.name.toLowerCase().includes(query) ||
+                train.source.toLowerCase().includes(query) ||
+                train.destination.toLowerCase().includes(query)
+            );
+
+            displayTrains(filteredTrains);
+            updateResultsTitle(`Search Results (${filteredTrains.length})`);
+        }
+
+        function filterByType(type) {
+            filteredTrains = allTrains.filter(train => 
+                train.name.toLowerCase().includes(type.toLowerCase())
+            );
+
+            displayTrains(filteredTrains);
+            updateResultsTitle(`${type} Trains (${filteredTrains.length})`);
+
+            // Update active filter
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function showAllTrains() {
+            filteredTrains = allTrains;
+            displayTrains(allTrains);
+            updateResultsTitle(`All Trains (${allTrains.length})`);
+            
+            // Clear search
+            document.getElementById('trainSearch').value = '';
+            
+            // Clear active filters
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+        }
+
+        function displayTrains(trains) {
+            const resultsDiv = document.getElementById('trainResults');
+            
+            if (trains.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
+                        <h3>No trains found</h3>
+                        <p>Try adjusting your search criteria</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">';
+            
+            trains.forEach(train => {
+                const routeStations = train.route ? train.route.split(',').slice(0, 3) : [];
+                const moreStations = train.route ? train.route.split(',').length - 3 : 0;
+                
+                html += `
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>${train.number} - ${train.name}</h3>
+                            <p style="color: #666; font-size: 12px;">
+                                ${getTrainType(train.name)} • ${getTrainCategory(train.name)}
+                            </p>
+                        </div>
+                        <div class="card-body" style="text-align: left; padding: 15px;">
+                            <div style="margin-bottom: 15px;">
+                                <strong>🚉 Route:</strong><br>
+                                <span style="color: #28a745; font-weight: bold;">${train.source}</span>
+                                <span style="margin: 0 10px; color: #666;">→</span>
+                                <span style="color: #dc3545; font-weight: bold;">${train.destination}</span>
+                            </div>
+                            
+                            ${routeStations.length > 0 ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong>📍 Major Stations:</strong><br>
+                                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                    ${routeStations.map(station => station.trim()).join(' → ')}
+                                    ${moreStations > 0 ? ` → +${moreStations} more` : ''}
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button onclick="trackTrain('${train.number}')" class="btn-gov" style="font-size: 12px; padding: 8px 12px;">
+                                    📍 Track Live
+                                </button>
+                                <button onclick="viewRoute('${train.number}')" class="btn-gov-secondary" style="font-size: 12px; padding: 8px 12px;">
+                                    🗺️ View Route
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function getTrainType(name) {
+            if (name.includes('Rajdhani')) return '👑 Rajdhani';
+            if (name.includes('Shatabdi')) return '⚡ Shatabdi';
+            if (name.includes('Duronto')) return '🚄 Duronto';
+            if (name.includes('Garib Rath')) return '🎯 Garib Rath';
+            if (name.includes('Mail')) return '📮 Mail';
+            return '🚂 Express';
+        }
+
+        function getTrainCategory(name) {
+            if (name.includes('Rajdhani') || name.includes('Shatabdi') || name.includes('Duronto')) {
+                return 'Premium';
+            }
+            if (name.includes('Garib Rath')) {
+                return 'Budget AC';
+            }
+            return 'Regular';
+        }
+
+        function updateResultsTitle(title) {
+            document.getElementById('resultsTitle').textContent = `🚆 ${title}`;
+        }
+
+        function trackTrain(trainNumber) {
+            window.open(`/track_train/${trainNumber}`, '_blank');
+        }
+
+        function viewRoute(trainNumber) {
+            window.open(`/get_train_info/${trainNumber}`, '_blank');
+        }
+
+        function showError(message) {
+            const resultsDiv = document.getElementById('trainResults');
+            resultsDiv.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 20px; color: #dc3545;">⚠️</div>
+                    <h3 style="color: #dc3545;">Error</h3>
+                    <p>${message}</p>
+                    <button onclick="loadAllTrains()" class="btn-gov" style="margin-top: 15px;">Retry</button>
+                </div>
+            `;
+        }
+
+        // Search on Enter key
+        document.getElementById('trainSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchTrains();
+            }
+        });
+    </script>
+</body>
+</html>

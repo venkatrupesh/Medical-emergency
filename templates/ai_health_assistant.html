@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Guidance - TrainCare Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .hc-wrap { padding: 22px 0 34px; }
+        .hc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .hc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 30px rgba(2,6,23,0.06); }
+        .hc-card-h { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; display:flex; align-items:center; justify-content: space-between; gap: 12px; }
+        .hc-card-h h3 { margin:0; font-size: 14px; color: #0b2a4a; }
+        .hc-body { padding: 16px; }
+        .hc-note { color: #475569; font-size: 13px; line-height: 1.6; }
+        .hc-pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid #e2e8f0; background:#f8fafc; font-size:12px; font-weight:700; }
+        .hc-pill.emergency { border-color: rgba(180,35,24,0.35); background: rgba(180,35,24,0.08); color: #7f1d1d; }
+        .hc-pill.urgent { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.10); color: #7c2d12; }
+        .hc-pill.self { border-color: rgba(34,197,94,0.35); background: rgba(34,197,94,0.10); color: #14532d; }
+        .hc-actions { margin: 10px 0 0; padding-left: 18px; color: #0f172a; }
+        .hc-actions li { margin: 6px 0; }
+        .hc-form { display: grid; gap: 10px; }
+        .hc-field label { display:block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+        .hc-field input { width:100%; padding: 12px; border-radius: 12px; border:1px solid #e2e8f0; background: #fff; }
+        .hc-field small { color:#64748b; }
+        .hc-chips { display:flex; flex-wrap: wrap; gap: 8px; }
+        .hc-chip { border: 1px solid #e2e8f0; background: #fff; padding: 8px 10px; border-radius: 999px; cursor:pointer; font-weight: 700; font-size: 12px; color: #0b2a4a; }
+        .hc-chip.active { border-color: rgba(18,74,122,0.45); background: rgba(18,74,122,0.08); }
+        .hc-btnrow { display:flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+        .hc-btn { border: 1px solid transparent; background: #0b2a4a; color:#fff; padding: 10px 14px; border-radius: 12px; cursor:pointer; font-weight: 800; }
+        .hc-btn.secondary { border-color: #e2e8f0; background:#fff; color:#0f172a; }
+        .hc-alert { border: 1px solid rgba(180,35,24,0.35); background: rgba(180,35,24,0.08); padding: 10px 12px; border-radius: 12px; color: #7f1d1d; font-size: 12px; display:none; }
+        @media (max-width: 980px){ .hc-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Reuse professional topbar style from landing theme -->
+    <header class="tc-topbar">
+        <div class="tc-container tc-topbar-inner">
+            <a class="tc-brand" href="/">
+                <div class="tc-mark">TC</div>
+                <div class="tc-brand-title">
+                    <strong>TrainCare Connect</strong>
+                    <span>Passenger Safety & Emergency Support</span>
+                </div>
+            </a>
+            <nav class="tc-nav">
+                <a href="/features">Services</a>
+                <a href="/crowd_monitor">Crowd Monitor</a>
+                <a href="/emergency">Emergency</a>
+                <a href="/admin_login" class="tc-nav-cta">Admin Portal</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="hc-wrap">
+        <div class="tc-container">
+            <div class="tc-section-header" style="margin-bottom: 10px;">
+                <div>
+                    <h2 style="margin:0; font-size: 20px;">Health Guidance</h2>
+                    <p style="margin:6px 0 0;">Deterministic triage guidance. No diagnosis and no simulated/guessed results.</p>
+                </div>
+            </div>
+
+            <div class="hc-grid">
+                <section class="hc-card">
+                    <div class="hc-card-h">
+                        <h3>Quick symptom selection</h3>
+                        <span class="hc-pill">Source: deterministic_triage</span>
+                    </div>
+                    <div class="hc-body">
+                        <div class="hc-alert" id="hcError"></div>
+
+                        <div class="hc-note">Select symptoms (you can choose multiple). Then run triage.</div>
+                        <div class="hc-chips" style="margin-top: 10px;" id="symptomChips">
+                            <button class="hc-chip" type="button" data-s="chest pain">Chest pain</button>
+                            <button class="hc-chip" type="button" data-s="difficulty breathing">Difficulty breathing</button>
+                            <button class="hc-chip" type="button" data-s="severe headache">Severe headache</button>
+                            <button class="hc-chip" type="button" data-s="fainting">Fainting</button>
+                            <button class="hc-chip" type="button" data-s="fever">Fever</button>
+                            <button class="hc-chip" type="button" data-s="abdominal pain">Abdominal pain</button>
+                            <button class="hc-chip" type="button" data-s="persistent vomiting">Persistent vomiting</button>
+                            <button class="hc-chip" type="button" data-s="severe bleeding">Severe bleeding</button>
+                            <button class="hc-chip" type="button" data-s="one-sided weakness">One-sided weakness</button>
+                            <button class="hc-chip" type="button" data-s="slurred speech">Slurred speech</button>
+                        </div>
+
+                        <div class="hc-form" style="margin-top: 14px;">
+                            <div class="hc-field">
+                                <label for="age">Age (optional)</label>
+                                <input id="age" type="number" min="0" max="120" placeholder="e.g., 28">
+                            </div>
+                            <div class="hc-field">
+                                <label>
+                                    <input id="pregnant" type="checkbox"> Pregnant (optional)
+                                </label>
+                                <small>Used only to increase urgency when relevant.</small>
+                            </div>
+
+                            <div class="hc-btnrow">
+                                <button class="hc-btn" type="button" onclick="runTriage()">Run triage</button>
+                                <button class="hc-btn secondary" type="button" onclick="clearTriage()">Clear</button>
+                                <a class="hc-btn secondary" href="/emergency" style="text-decoration:none;">Open Emergency Form</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="hc-card">
+                    <div class="hc-card-h">
+                        <h3>Triage result</h3>
+                        <span class="hc-pill" id="resultBadge">Not run</span>
+                    </div>
+                    <div class="hc-body">
+                        <div class="hc-note" id="resultMeta">Run triage to receive guidance.</div>
+
+                        <div style="margin-top: 12px;">
+                            <div id="resultLevel" style="font-weight: 900; font-size: 16px; color: #0b2a4a;"></div>
+                            <ul class="hc-actions" id="resultActions"></ul>
+                            <div class="hc-note" id="resultDisclaimer" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="tc-section" style="padding-top: 18px;">
+                <div class="tc-cards" style="grid-template-columns: repeat(3, 1fr);">
+                    <article class="tc-card">
+                        <h3>Emergency contacts</h3>
+                        <p>Railway: 139 • National Emergency: 112 • Ambulance: 108</p>
+                    </article>
+                    <article class="tc-card">
+                        <h3>On-train basics</h3>
+                        <p>Hydrate, avoid overcrowded areas, and notify staff early if symptoms worsen.</p>
+                    </article>
+                    <article class="tc-card">
+                        <h3>When to report SOS</h3>
+                        <p>Chest pain, breathing difficulty, fainting, seizures, severe bleeding, stroke signs.</p>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="tc-footer">
+        <div class="tc-container">
+            <div class="tc-footer-grid">
+                <div>
+                    <div><strong style="color: var(--tc-ink);">TrainCare Connect</strong></div>
+                    <div>Health guidance is informational and not a diagnosis.</div>
+                </div>
+                <div style="display:flex; gap: 14px; flex-wrap: wrap; justify-content:flex-end;">
+                    <a href="/">Home</a>
+                    <a href="/emergency">Emergency</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const selected = new Set();
+
+        document.querySelectorAll('#symptomChips .hc-chip').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const s = btn.getAttribute('data-s');
+                if (selected.has(s)) {
+                    selected.delete(s);
+                    btn.classList.remove('active');
+                } else {
+                    selected.add(s);
+                    btn.classList.add('active');
+                }
+            });
+        });
+
+        function setBadge(level) {
+            const badge = document.getElementById('resultBadge');
+            badge.className = 'hc-pill';
+            if (level === 'emergency') {
+                badge.classList.add('emergency');
+                badge.textContent = 'EMERGENCY';
+            } else if (level === 'urgent') {
+                badge.classList.add('urgent');
+                badge.textContent = 'URGENT';
+            } else if (level === 'self_care') {
+                badge.classList.add('self');
+                badge.textContent = 'SELF CARE';
+            } else {
+                badge.textContent = 'Not run';
+            }
+        }
+
+        async function runTriage() {
+            const err = document.getElementById('hcError');
+            err.style.display = 'none';
+            err.textContent = '';
+
+            if (selected.size === 0) {
+                err.textContent = 'Select at least one symptom.';
+                err.style.display = 'block';
+                return;
+            }
+
+            const age = document.getElementById('age').value || null;
+            const pregnant = document.getElementById('pregnant').checked;
+
+            try {
+                const res = await fetch('/api/health_triage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symptoms: Array.from(selected), age, pregnant })
+                });
+
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to run triage');
+                }
+
+                const r = data.result;
+
+                setBadge(r.triage_level);
+                document.getElementById('resultMeta').textContent = `Source: ${data.source} • Generated: ${data.generated_at}`;
+                document.getElementById('resultLevel').textContent = `Triage level: ${r.triage_level.replace('_',' ')}`;
+
+                const ul = document.getElementById('resultActions');
+                ul.innerHTML = '';
+                (r.actions || []).forEach(a => {
+                    const li = document.createElement('li');
+                    li.textContent = a;
+                    ul.appendChild(li);
+                });
+
+                document.getElementById('resultDisclaimer').textContent = r.disclaimer || '';
+
+            } catch (e) {
+                err.textContent = e.message || 'Failed to run triage.';
+                err.style.display = 'block';
+            }
+        }
+
+        function clearTriage() {
+            selected.clear();
+            document.querySelectorAll('#symptomChips .hc-chip').forEach(b => b.classList.remove('active'));
+            document.getElementById('age').value = '';
+            document.getElementById('pregnant').checked = false;
+            document.getElementById('hcError').style.display = 'none';
+            document.getElementById('resultMeta').textContent = 'Run triage to receive guidance.';
+            document.getElementById('resultLevel').textContent = '';
+            document.getElementById('resultActions').innerHTML = '';
+            document.getElementById('resultDisclaimer').textContent = '';
+            setBadge(null);
+        }
+    </script>
+</body>
+</html>

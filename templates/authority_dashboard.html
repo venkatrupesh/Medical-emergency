@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations.get('operations_console', 'Operations Console') }} - {{ translations.get('emergency_reports',
+        'Emergency Reports') }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+
+<body class="ap-body">
+    <header class="ap-topbar">
+        <div class="ap-container ap-topbar-inner">
+            <div class="ap-brand">
+                <div class="ap-badge">OPS</div>
+                <div>
+                    <h1>{{ translations.get('railway_emergency_system', 'TrainCare Connect') }} • {{
+                        translations.get('operations_console', 'Operations Console') }}</h1>
+                    <p>{{ translations.get('response_coordination', 'Emergency reports & response coordination') }}</p>
+                </div>
+            </div>
+            <nav class="ap-nav">
+                <a href="/" title="{{ translations.get('passenger_site', 'Passenger Site') }}">{{
+                    translations.get('passenger_site', 'Passenger Site') }}</a>
+                <a href="/authority_dashboard" class="ap-nav-cta">{{ translations.get('dashboard', 'Dashboard') }}</a>
+                <a href="/logout" class="ap-nav-cta">{{ translations.get('logout', 'Logout') }}</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="ap-main">
+        <div class="ap-container">
+            <div class="ap-page-title">
+                <div>
+                    <h2>{{ translations.get('emergency_reports', 'Emergency Reports') }}</h2>
+                    <p>{{ translations.get('monitor_reports_desc', 'Monitor incoming passenger reports, review train
+                        context, and update response status.') }}</p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="text-align: right;">
+                        <div class="ap-pill">{{ translations.get('system', 'System') }}: <span
+                                style="color: #bbf7d0;">{{ translations.get('online', 'ONLINE') }}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <section class="ap-card">
+                <div class="ap-card-header">
+                    <h3>{{ translations.get('operational_overview', 'Operational Overview') }}</h3>
+                    <div class="ap-toolbar">
+                        <span class="ap-pill">{{ translations.get('auto_refresh', 'Auto refresh') }}: 30s</span>
+                    </div>
+                </div>
+                <div class="ap-kpi">
+                    <div class="ap-kpi-item ap-critical">
+                        <div class="n">{{ sos_count }}</div>
+                        <div class="l">{{ translations.get('sos_alerts', 'SOS alerts') }}</div>
+                    </div>
+                    <div class="ap-kpi-item ap-warning">
+                        <div class="n">{{ pending_count }}</div>
+                        <div class="l">{{ translations.get('pending', 'Pending') }}</div>
+                    </div>
+                    <div class="ap-kpi-item">
+                        <div class="n">{{ total_count }}</div>
+                        <div class="l">{{ translations.get('total_reports', 'Total reports') }}</div>
+                    </div>
+                    <div class="ap-kpi-item ap-success">
+                        <div class="n">{{ resolved_count }}</div>
+                        <div class="l">{{ translations.get('resolved', 'Resolved') }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports table -->
+            <section class="ap-card" style="margin-top: 14px;">
+                <div class="ap-card-header">
+                    <h3>{{ translations.get('reports_queue', 'Reports Queue') }}</h3>
+                    <div class="ap-toolbar">
+                        <div class="ap-filters" role="tablist" aria-label="Filters">
+                            <button class="ap-chip active" onclick="filterReports('all')">{{ translations.get('all',
+                                'All') }}</button>
+                            <button class="ap-chip" onclick="filterReports('sos')">{{ translations.get('sos', 'SOS')
+                                }}</button>
+                            <button class="ap-chip" onclick="filterReports('pending')">{{ translations.get('pending',
+                                'Pending') }}</button>
+                            <button class="ap-chip" onclick="filterReports('in_progress')">{{
+                                translations.get('in_progress', 'In progress') }}</button>
+                            <button class="ap-chip" onclick="filterReports('resolved')">{{ translations.get('resolved',
+                                'Resolved') }}</button>
+                        </div>
+                    </div>
+                </div>
+
+                {% if enhanced_reports %}
+                <div style="overflow-x: auto;">
+                    <table class="ap-table" id="reportsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 90px;">{{ translations.get('report', 'Report') }}</th>
+                                <th style="width: 140px;">{{ translations.get('status', 'Status') }}</th>
+                                <th>{{ translations.get('passenger', 'Passenger') }}</th>
+                                <th>{{ translations.get('train', 'Train') }}</th>
+                                <th>{{ translations.get('emergency', 'Emergency') }}</th>
+                                <th style="width: 210px;">{{ translations.get('nearest_station', 'Nearest station') }}
+                                </th>
+                                <th style="width: 240px;">{{ translations.get('actions', 'Actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in enhanced_reports %}
+                            {% set status = item.report[9] %}
+                            {% set is_sos = (item.report[6] == 'sos') %}
+                            <tr class="report-row" data-status="{{ status }}"
+                                data-type="{{ 'sos' if is_sos else 'normal' }}">
+                                <td>
+                                    <div style="font-weight: 900;">#{{ item.report[0] }}</div>
+                                    <div style="color: var(--ap-muted); font-size: 12px;">{{ item.report[10] }}</div>
+                                </td>
+                                <td>
+                                    {% if is_sos %}
+                                    <span class="ap-pill ap-sos">SOS</span>
+                                    {% endif %}
+
+                                    {% if status == 'pending' %}
+                                    <span class="ap-pill ap-pending">PENDING</span>
+                                    {% elif status == 'in_progress' %}
+                                    <span class="ap-pill ap-inprogress">IN PROGRESS</span>
+                                    {% elif status == 'resolved' %}
+                                    <span class="ap-pill ap-resolved">RESOLVED</span>
+                                    {% else %}
+                                    <span class="ap-pill">{{ status|upper }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="font-weight: 800;">{{ item.report[1] }}</div>
+                                    <div style="color: var(--ap-muted); font-size: 12px;">{{ item.report[2] }}</div>
+                                    <div style="color: var(--ap-muted); font-size: 12px; margin-top: 6px;">
+                                        Coach <strong style="color: var(--ap-ink);">{{ item.report[4] }}</strong> • Seat
+                                        <strong style="color: var(--ap-ink);">{{ item.report[5] }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 800;">{{ item.train_location.train_name }}</div>
+                                    <div style="color: var(--ap-muted); font-size: 12px;">{{ item.report[3] }}</div>
+                                    <div style="color: var(--ap-muted); font-size: 12px; margin-top: 6px;">
+                                        {{ item.train_location.last_station }} → {{ item.train_location.next_station }}
+                                    </div>
+                                    <div style="color: var(--ap-muted); font-size: 12px;">
+                                        Speed: {{ item.train_location.speed|round(1) }} km/h
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 800;">{{ item.report[6].replace('_', ' ').title() }}</div>
+                                    <div
+                                        style="color: var(--ap-muted); font-size: 12px; line-height: 1.5; margin-top: 6px;">
+                                        {{ item.report[7] }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if item.nearest_stations and item.nearest_stations|length > 0 %}
+                                    <div style="font-weight: 800;">{{ item.nearest_stations[0].name }} ({{
+                                        item.nearest_stations[0].code }})</div>
+                                    <div style="color: var(--ap-muted); font-size: 12px;">{{
+                                        translations.get('distance', 'Distance') }}: {{
+                                        item.nearest_stations[0].distance_km }} km • ETA: ~{{
+                                        item.nearest_stations[0].eta_minutes }} min</div>
+                                    <div style="color: var(--ap-muted); font-size: 12px;">{{ translations.get('contact',
+                                        'Contact') }}: {{ item.nearest_stations[0].contact }}</div>
+                                    {% else %}
+                                    <div style="color: var(--ap-muted);">{{ translations.get('not_available', 'Not
+                                        available') }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="ap-actions">
+                                        <a class="ap-btn ap-btn-primary" href="#"
+                                            onclick="viewLiveTracking('{{ item.report[3] }}'); return false;">{{
+                                            translations.get('live_tracking', 'Live tracking') }}</a>
+                                        <a class="ap-btn ap-btn-success" href="#"
+                                            onclick="openMedicalResponse({{ item.report[0] }}); return false;">{{
+                                            translations.get('medical_response', 'Medical response') }}</a>
+
+                                        {% if item.nearest_stations and item.nearest_stations|length > 0 %}
+                                        <a class="ap-btn" href="#"
+                                            onclick="alertStationManager('{{ item.nearest_stations[0].code }}', '{{ item.nearest_stations[0].manager_name }}', '{{ item.nearest_stations[0].manager_phone }}', {{ item.nearest_stations[0].eta_minutes }}); return false;">{{
+                                            translations.get('alert_manager', 'Alert manager') }}</a>
+                                        {% else %}
+                                        <span class="ap-btn" style="opacity: 0.55; cursor: not-allowed;">{{
+                                            translations.get('alert_manager', 'Alert manager') }}</span>
+                                        {% endif %}
+
+                                        {% if status == 'pending' %}
+                                        <a class="ap-btn ap-btn-warning" href="#"
+                                            onclick="updateStatus({{ item.report[0] }}, 'in_progress'); return false;">{{
+                                            translations.get('mark_in_progress', 'Mark in progress') }}</a>
+                                        <a class="ap-btn ap-btn-success" href="#"
+                                            onclick="updateStatus({{ item.report[0] }}, 'resolved'); return false;">{{
+                                            translations.get('resolve', 'Resolve') }}</a>
+                                        {% elif status == 'in_progress' %}
+                                        <a class="ap-btn ap-btn-success" href="#"
+                                            onclick="updateStatus({{ item.report[0] }}, 'resolved'); return false;">{{
+                                            translations.get('resolve', 'Resolve') }}</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div style="padding: 18px; color: var(--ap-muted);">
+                    {{ translations.get('no_reports', 'No emergency reports found.') }}
+                </div>
+                {% endif %}
+            </section>
+
+            <section class="ap-card" style="margin-top: 14px;">
+                <div class="ap-card-header">
+                    <h3>{{ translations.get('system_status', 'System status') }}</h3>
+                    <div class="ap-toolbar">
+                        <span class="ap-pill">{{ translations.get('emergency_system', 'Emergency system') }} <span
+                                style="color: #bbf7d0; margin-left: 6px;">{{ translations.get('operational',
+                                'OPERATIONAL') }}</span></span>
+                        <span class="ap-pill">{{ translations.get('train_context', 'Train context') }} <span
+                                style="color: #bbf7d0; margin-left: 6px;">{{ translations.get('active', 'ACTIVE')
+                                }}</span></span>
+                        <span class="ap-pill">{{ translations.get('station_network', 'Station network') }} <span
+                                style="color: #bbf7d0; margin-left: 6px;">{{ translations.get('connected', 'CONNECTED')
+                                }}</span></span>
+                    </div>
+                </div>
+                <div style="padding: 16px; color: var(--ap-muted); font-size: 13px; line-height: 1.6;">
+                    {{ translations.get('system_notes', 'Notes: This dashboard uses the current database and simulated
+                    train context fallback when real APIs are unavailable.') }}
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="ap-footer">
+        <div class="ap-container">
+            {{ translations.get('authorized_personnel', 'Authorized personnel only') }} • {{
+            translations.get('railway_emergency_system', 'TrainCare Connect') }} {{
+            translations.get('operations_console', 'Operations Console') }}
+        </div>
+    </footer>
+
+    <script>
+        function openMedicalResponse(reportId) {
+            window.open(`/medical_response?id=${reportId}`, '_blank', 'width=1200,height=800');
+        }
+
+        function viewLiveTracking(trainNumber) {
+            window.open(`/track_train/${trainNumber}`, '_blank');
+        }
+
+        function alertStationManager(stationCode, managerName, phone, etaMinutes) {
+            const alertData = {
+                station_code: stationCode,
+                emergency_type: 'Medical Emergency',
+                train_number: 'Unknown',
+                eta_minutes: etaMinutes
+            };
+
+            fetch('/alert_station_manager', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(alertData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Station Manager ${managerName} alerted successfully. Phone: ${phone}. ETA: ${etaMinutes} minutes`);
+                    } else {
+                        alert('Failed to alert station manager');
+                    }
+                })
+                .catch(() => alert('Error alerting station manager'));
+        }
+
+        function filterReports(filter) {
+            const chips = document.querySelectorAll('.ap-chip');
+            chips.forEach(c => c.classList.remove('active'));
+
+            const btn = Array.from(chips).find(c => (c.textContent || '').toLowerCase().includes(filter.replace('_', ' ')));
+            if (btn) btn.classList.add('active');
+
+            const rows = document.querySelectorAll('.report-row');
+            rows.forEach(row => {
+                const status = row.getAttribute('data-status');
+                const type = row.getAttribute('data-type');
+
+                let visible = true;
+                if (filter === 'sos') visible = (type === 'sos');
+                else if (filter === 'all') visible = true;
+                else visible = (status === filter);
+
+                row.style.display = visible ? '' : 'none';
+            });
+        }
+
+        function updateStatus(reportId, status) {
+            // Uses your existing backend route (GET update)
+            window.location.href = `/update_status/${reportId}/${status}`;
+        }
+
+        // Default filter
+        filterReports('all');
+
+        // Auto refresh
+        setInterval(() => {
+            window.location.reload();
+        }, 30000);
+    </script>
+</body>
+
+</html>

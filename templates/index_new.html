@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations.page_title or 'TrainCare Connect - Railway Emergency & Booking Platform' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Modern Top Navigation Bar -->
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <i class="fas fa-train"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>TrainCare Connect</h1>
+                        <span>Railway Emergency & Booking Platform</span>
+                    </div>
+                </div>
+                
+                <nav class="main-nav">
+                    <a href="/" class="nav-link active">{{ translations.home or 'Home' }}</a>
+                    <a href="/train_search" class="nav-link">{{ translations.search_trains or 'Search Trains' }}</a>
+                    <a href="/train_booking" class="nav-link">Book Ticket</a>
+                    <a href="/pnr_status" class="nav-link">PNR Status</a>
+                    <a href="/seat_availability" class="nav-link">Seat Availability</a>
+                    <a href="/features" class="nav-link">{{ translations.dashboard or 'Features' }}</a>
+                </nav>
+                
+                <div class="header-actions">
+                    <!-- Language Switcher -->
+                    <div class="language-switcher">
+                        <button class="lang-btn" id="langBtn">
+                            <i class="fas fa-globe"></i>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lang-dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" class="lang-option {% if code == lang %}active{% endif %}">
+                                <span class="lang-flag">{{ lang_info.flag }}</span>
+                                <span class="lang-name">{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <a href="/login" class="btn btn-outline">{{ translations.login or 'Login' }}</a>
+                    <a href="/signup" class="btn btn-primary">{{ translations.signup or 'Sign Up' }}</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background">
+            <div class="hero-overlay"></div>
+            <div class="animated-train"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Trusted by Millions • 24/7 Support • Instant Response</span>
+                </div>
+                <h1 class="hero-title">Your Complete Railway Journey Partner</h1>
+                <p class="hero-subtitle">Book tickets, check PNR status, track trains, and get instant emergency medical assistance - all in one platform</p>
+                
+                <!-- Quick Action Cards -->
+                <div class="quick-actions">
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <h3>Book Ticket</h3>
+                        <p>Quick & easy train ticket booking</p>
+                        <a href="/train_booking" class="action-link">Book Now <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-icon emergency">
+                            <i class="fas fa-ambulance"></i>
+                        </div>
+                        <h3>Emergency Help</h3>
+                        <p>24/7 medical emergency support</p>
+                        <a href="/emergency" class="action-link">Get Help <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>PNR Status</h3>
+                        <p>Check your booking status instantly</p>
+                        <a href="/pnr_status" class="action-link">Check Now <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h3>Track Train</h3>
+                        <p>Real-time train location tracking</p>
+                        <a href="/train_tracker" class="action-link">Track Now <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- IRCTC Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Complete Railway Services</h2>
+                <p>Everything you need for a smooth railway journey</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-train"></i>
+                    </div>
+                    <h3>Train Booking</h3>
+                    <p>Book train tickets instantly with our easy-to-use booking system. Search trains, check availability, and complete booking in minutes.</p>
+                    <a href="/train_booking" class="feature-link">Book Ticket <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h3>PNR Status</h3>
+                    <p>Check your PNR status, seat details, and train information in real-time. Get instant updates on your booking.</p>
+                    <a href="/pnr_status" class="feature-link">Check Status <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chair"></i>
+                    </div>
+                    <h3>Seat Availability</h3>
+                    <p>Check seat availability for any train, date, and class. Get detailed information about available seats and waiting list.</p>
+                    <a href="/seat_availability" class="feature-link">Check Availability <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Train Schedule</h3>
+                    <p>View complete train schedules, arrival/departure times, and platform information for all stations.</p>
+                    <a href="/train_schedule" class="feature-link">View Schedule <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <h3>Fare Enquiry</h3>
+                    <p>Check train fares for any route, class, and date. Compare prices and plan your journey budget.</p>
+                    <a href="/fare_enquiry" class="feature-link">Check Fare <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="feature-card emergency-feature">
+                    <div class="feature-icon emergency">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3>Emergency Medical Help</h3>
+                    <p>24/7 emergency medical assistance during train journeys. Report emergencies and get instant help from nearby stations.</p>
+                    <a href="/emergency" class="feature-link">Emergency Help <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="1000000">0</div>
+                    <div class="stat-label">Happy Passengers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="50000">0</div>
+                    <div class="stat-label">Daily Bookings</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="2000">0</div>
+                    <div class="stat-label">Trains Tracked</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="24">0</div>
+                    <div class="stat-label">Hours Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>Simple steps to book your ticket or get emergency help</p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h3>Create Account</h3>
+                    <p>Sign up for free and get instant access to all railway services</p>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Search & Book</h3>
+                    <p>Search trains, check availability, and book tickets in minutes</p>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <h3>Get Confirmation</h3>
+                    <p>Receive instant confirmation and PNR details via SMS and email</p>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">
+                        <i class="fas fa-train"></i>
+                    </div>
+                    <h3>Travel Safely</h3>
+                    <p>Track your train, check PNR status, and get emergency help anytime</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="modern-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TrainCare Connect</h3>
+                    <p>Your trusted partner for railway journeys. Book tickets, track trains, and get emergency medical assistance.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="/train_booking">Book Ticket</a></li>
+                        <li><a href="/pnr_status">PNR Status</a></li>
+                        <li><a href="/seat_availability">Seat Availability</a></li>
+                        <li><a href="/train_schedule">Train Schedule</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="/emergency">Emergency Help</a></li>
+                        <li><a href="/train_tracker">Track Train</a></li>
+                        <li><a href="/crowd_monitor">Crowd Monitor</a></li>
+                        <li><a href="/features">All Features</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/signup">Sign Up</a></li>
+                        <li><a href="/admin_login">Admin Portal</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 TrainCare Connect. All rights reserved.</p>
+                <p class="emergency-info">
+                    <strong>Emergency Helpline:</strong> 
+                    <a href="tel:139">139</a> (Railway) | 
+                    <a href="tel:112">112</a> (National Emergency)
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/language-support.js') }}"></script>
+    <script>
+        // Language switcher functionality
+        document.getElementById('langBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('langDropdown');
+            dropdown.classList.toggle('show');
+        });
+        
+        document.addEventListener('click', function(e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        // Animated stats counter
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            const duration = 2000;
+            const increment = target / (duration / 16);
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target.toLocaleString() + (target === 24 ? '/7' : '+');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 16);
+        }
+        
+        // Trigger animation when stats section is visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.stat-number').forEach(stat => {
+                        if (!stat.classList.contains('animated')) {
+                            stat.classList.add('animated');
+                            animateCounter(stat);
+                        }
+                    });
+                }
+            });
+        });
+        
+        document.querySelectorAll('.stat-item').forEach(item => {
+            observer.observe(item);
+        });
+    </script>
+</body>
+</html>

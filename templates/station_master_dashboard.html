@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="station_master_dashboard">{{ translations.get('station_master_dashboard', 'Station Master
+        Dashboard') }} - {{ station_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+
+<body class="ap-body">
+    <header class="ap-topbar">
+        <div class="ap-container ap-topbar-inner">
+            <div class="ap-brand">
+                <div class="ap-badge">SM</div>
+                <div>
+                    <h1 data-translate="station_master_console">{{ translations.get('station_master_console', 'Station
+                        Master Console') }} • {{ station_name }} ({{ station_code }})</h1>
+                    <p data-translate="station_emergency_management">{{ translations.get('station_emergency_management',
+                        'Station emergency management & coordination') }}</p>
+                </div>
+            </div>
+            <nav class="ap-nav">
+                <nav class="ap-nav">
+                    <a href="/" data-translate="passenger_site">{{ translations.get('passenger_site', 'Passenger Site')
+                        }}</a>
+                    <a href="/station_master_dashboard" class="ap-nav-cta" data-translate="dashboard">{{
+                        translations.get('dashboard', 'Dashboard') }}</a>
+                    <a href="/station_master_logout" class="ap-nav-cta" data-translate="logout">{{
+                        translations.get('logout', 'Logout') }}</a>
+                </nav>
+        </div>
+    </header>
+
+    <main class="ap-main">
+        <div class="ap-container">
+            <div class="ap-page-title">
+                <div>
+                    <div>
+                        <h2 data-translate="emergency_reports_for_station">{{ translations.get('emergency_reports_for',
+                            'Emergency Reports for') }} {{ station_name }}</h2>
+                        <p data-translate="monitor_station_emergencies">{{
+                            translations.get('monitor_station_emergencies', 'Monitor emergencies approaching or at your
+                            station') }}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="text-align: right;">
+                            <div class="ap-pill" data-translate="system_online">{{ translations.get('system', 'System')
+                                }}: <span style="color: #bbf7d0;">{{ translations.get('online', 'ONLINE') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Station Info -->
+                <section class="ap-card">
+                    <div class="ap-card-header">
+                        <div class="ap-card-header">
+                            <h3 data-translate="station_information">{{ translations.get('station_information', 'Station
+                                Information') }}</h3>
+                        </div>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                            <div>
+                                <div style="color: var(--ap-muted); font-size: 12px;" data-translate="station_name">{{
+                                    translations.get('station_name', 'Station Name') }}</div>
+                                <div style="font-weight: 800; margin-top: 4px;">{{ station_name }}</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--ap-muted); font-size: 12px;" data-translate="station_code">{{
+                                    translations.get('station_code', 'Station Code') }}</div>
+                                <div style="font-weight: 800; margin-top: 4px;">{{ station_code }}</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--ap-muted); font-size: 12px;" data-translate="contact_number">{{
+                                    translations.get('contact_number', 'Contact Number') }}</div>
+                                <div style="font-weight: 800; margin-top: 4px;">{{ contact_number }}</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--ap-muted); font-size: 12px;" data-translate="medical_facility">
+                                    {{ translations.get('medical_facility', 'Medical Facility') }}</div>
+                                <div style="font-weight: 800; margin-top: 4px;">{{ medical_facility }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- KPIs -->
+                <section class="ap-card" style="margin-top: 14px;">
+                    <div class="ap-card-header">
+                        <h3 data-translate="station_overview">{{ translations.get('station_overview', 'Station
+                            Overview') }}</h3>
+                    </div>
+                    <div class="ap-kpi">
+                        <div class="ap-kpi-item ap-critical">
+                            <div class="n">{{ approaching_count }}</div>
+                            <div class="l" data-translate="approaching_trains">{{ translations.get('approaching_trains',
+                                'Approaching Trains') }}</div>
+                        </div>
+                        <div class="ap-kpi-item ap-warning">
+                            <div class="n">{{ pending_count }}</div>
+                            <div class="l" data-translate="pending_emergencies">{{ translations.get('pending',
+                                'Pending') }}</div>
+                        </div>
+                        <div class="ap-kpi-item ap-success">
+                            <div class="n">{{ resolved_count }}</div>
+                            <div class="l" data-translate="resolved">{{ translations.get('resolved', 'Resolved') }}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports table -->
+                <section class="ap-card" style="margin-top: 14px;">
+                    <div class="ap-card-header">
+                        <h3 data-translate="emergency_reports">{{ translations.get('emergency_reports', 'Emergency
+                            Reports') }}</h3>
+                    </div>
+
+                    {% if reports %}
+                    <div style="overflow-x: auto;">
+                        <table class="ap-table">
+                            <thead>
+                                <tr>
+                                    <th data-translate="report_id">{{ translations.get('report', 'Report') }}</th>
+                                    <th data-translate="status">{{ translations.get('status', 'Status') }}</th>
+                                    <th data-translate="passenger">{{ translations.get('passenger', 'Passenger') }}</th>
+                                    <th data-translate="train">{{ translations.get('train', 'Train') }}</th>
+                                    <th data-translate="emergency">{{ translations.get('emergency', 'Emergency') }}</th>
+                                    <th data-translate="eta">{{ translations.get('eta', 'ETA') }}</th>
+                                    <th data-translate="actions">{{ translations.get('actions', 'Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 900;">#{{ report.id }}</div>
+                                        <div style="color: var(--ap-muted); font-size: 12px;">{{ report.timestamp }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if report.emergency_type == 'sos' %}
+                                        <span class="ap-pill ap-sos">SOS</span>
+                                        {% endif %}
+                                        {% if report.status == 'pending' %}
+                                        <span class="ap-pill ap-pending">PENDING</span>
+                                        {% elif report.status == 'in_progress' %}
+                                        <span class="ap-pill ap-inprogress">IN PROGRESS</span>
+                                        {% elif report.status == 'resolved' %}
+                                        <span class="ap-pill ap-resolved">RESOLVED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 800;">{{ report.passenger_name }}</div>
+                                        <div style="color: var(--ap-muted); font-size: 12px;">{{ report.phone }}</div>
+                                        <div style="color: var(--ap-muted); font-size: 12px; margin-top: 6px;">
+                                            Coach <strong>{{ report.coach }}</strong> • Seat <strong>{{ report.seat
+                                                }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 800;">{{ report.train_name }}</div>
+                                        <div style="color: var(--ap-muted); font-size: 12px;">{{ report.train_number }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 800;">{{ report.emergency_type.replace('_', '
+                                            ').title() }}</div>
+                                        <div style="color: var(--ap-muted); font-size: 12px;">{{ report.description }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 800;">~{{ report.eta_minutes }} min</div>
+                                        <div style="color: var(--ap-muted); font-size: 12px;">{{ report.distance_km }}
+                                            km</div>
+                                    </td>
+                                    <td>
+                                        <div class="ap-actions">
+                                            <a class="ap-btn ap-btn-success" href="#"
+                                                onclick="prepareMedicalTeam({{ report.id }}, '{{ report.train_number }}', {{ report.eta_minutes }}); return false;"
+                                                data-translate="prepare_medical_team">{{
+                                                translations.get('prepare_medical_team', 'Prepare Medical Team') }}</a>
+                                            {% if report.status == 'pending' %}
+                                            <a class="ap-btn ap-btn-warning" href="#"
+                                                onclick="updateStatus({{ report.id }}, 'in_progress'); return false;"
+                                                data-translate="mark_in_progress">{{
+                                                translations.get('mark_in_progress', 'Mark In Progress') }}</a>
+                                            {% elif report.status == 'in_progress' %}
+                                            <a class="ap-btn ap-btn-success" href="#"
+                                                onclick="updateStatus({{ report.id }}, 'resolved'); return false;"
+                                                data-translate="mark_resolved">{{ translations.get('resolve', 'Resolve')
+                                                }}</a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div style="padding: 18px; color: var(--ap-muted);" data-translate="no_emergency_reports">
+                        {{ translations.get('no_reports', 'No emergency reports for your station.') }}
+                    </div>
+                    {% endif %}
+                </section>
+
+                <!-- Nearby Hospitals -->
+                <section class="ap-card" style="margin-top: 14px;">
+                    <div class="ap-card-header">
+                        <h3 data-translate="nearby_hospitals">Nearby Hospitals</h3>
+                    </div>
+                    <div style="padding: 16px;">
+                        <p style="color: var(--ap-muted); font-size: 13px;">{{ hospitals_nearby }}</p>
+                    </div>
+                </section>
+
+            </div>
+    </main>
+
+    <footer class="ap-footer">
+        <div class="ap-container" data-translate="station_master_footer">
+            {{ translations.get('station_master_console', 'Station Master Console') }} • {{ station_name }} ({{
+            station_code }})
+        </div>
+    </footer>
+
+    <!-- Translations Data -->
+    <script id="translations-data" type="application/json">{{ translations | tojson }}</script>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        function prepareMedicalTeam(reportId, trainNumber, eta) {
+            const confirmMsg = {{ translations.get('prepare_medical_confirm', 'Prepare medical team for Train') | tojson
+        }} + ' ' + trainNumber + '? ETA: ' + eta + ' ' + {{ translations.get('minutes', 'minutes') | tojson }};
+        if (confirm(confirmMsg)) {
+            alert({{ translations.get('medical_team_notified', 'Medical team has been notified and is preparing for arrival.') | tojson }});
+            }
+        }
+
+        function updateStatus(reportId, status) {
+            window.location.href = `/update_status/${reportId}/${status}`;
+        }
+
+        // Auto refresh every 30 seconds
+        setInterval(() => {
+            window.location.reload();
+        }, 30000);
+    </script>
+</body>
+
+</html>

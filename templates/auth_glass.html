@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Login' if is_login else 'Sign Up' }} - TrainCare</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            ;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-bg {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(10, 132, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(90, 200, 250, 0.15) 0%, transparent 50%);
+        }
+        
+        .auth-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .auth-container {
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        .auth-card {
+            background: rgba(28, 28, 30, 0.6);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .auth-logo {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 24px;
+            box-shadow: 0 12px 32px rgba(10, 132, 255, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .auth-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        
+        .auth-subtitle {
+            color: var(--gray-400);
+            font-size: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            opacity: 0.5;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.2);
+        }
+        
+        .form-input:focus + .input-icon {
+            opacity: 1;
+            color: var(--primary-light);
+        }
+        
+        .btn-submit {
+            width: 100%;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-submit:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 32px 0;
+            color: var(--gray-500);
+            font-size: 14px;
+        }
+        
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .social-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .social-btn {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .social-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 32px;
+            color: var(--gray-400);
+        }
+        
+        .auth-footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .auth-footer a:hover {
+            color: var(--primary);
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .shape {
+            position: absolute;
+            background: var(--gradient-primary);
+            opacity: 0.1;
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            right: -150px;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: -100px;
+            left: -100px;
+            animation-delay: 2s;
+        }
+        
+        .shape:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            left: -75px;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-bg"></div>
+        <div class="auth-grid"></div>
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">🚑</div>
+                    <h1 class="auth-title">{{ 'Welcome Back' if is_login else 'Create Account' }}</h1>
+                    <p class="auth-subtitle">{{ 'Login to access your dashboard' if is_login else 'Join TrainCare Connect today' }}</p>
+                </div>
+                
+                <form id="authForm">
+                    {% if not is_login %}
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <div class="input-wrapper">
+                            <input type="text" class="form-input" name="username" required>
+                            <div class="input-icon">👤</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <div class="input-wrapper">
+                            <input type="email" class="form-input" name="email" required>
+                            <div class="input-icon">📧</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input type="tel" class="form-input" name="phone" required>
+                            <div class="input-icon">📱</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <div class="input-wrapper">
+                            <input type="text" class="form-input" name="username" required>
+                            <div class="input-icon">👤</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" class="form-input" name="password" required>
+                            <div class="input-icon">🔒</div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg btn-submit">
+                        {{ 'Login' if is_login else 'Create Account' }} →
+                    </button>
+                </form>
+                
+                <div class="auth-divider">OR</div>
+                
+                <div class="social-btns">
+                    <button class="social-btn">
+                        <span>🔵</span> Google
+                    </button>
+                    <button class="social-btn">
+                        <span>📱</span> Phone
+                    </button>
+                </div>
+                
+                <div class="auth-footer">
+                    {{ 'Don\'t have an account?' if is_login else 'Already have an account?' }}
+                    <a href="{{ '/signup' if is_login else '/login' }}">
+                        {{ 'Sign Up' if is_login else 'Login' }}
+                    </a>
+                    <br><br>
+                    <a href="/">← Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        window.TRANSLATIONS = {{ translations | tojson | safe }};
+        window.CURRENT_LANG = '{{ lang }}';
+        if (typeof initTranslations === 'function') {
+            initTranslations();
+        }
+        
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            fetch('{{ "/login" if is_login else "/signup" }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '{{ "/user_dashboard" if is_login else "/login" }}';
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

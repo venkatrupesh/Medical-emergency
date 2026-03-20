@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Dashboard - Railway Health System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>📊 Railway Authority Dashboard</h1>
+            <a href="/" class="back-btn">← Back to Home</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <h3>{{ enhanced_reports|length }}</h3>
+                <p>Total Reports</p>
+            </div>
+            <div class="stat-card pending">
+                <h3>{{ enhanced_reports|selectattr('report.9', 'equalto', 'pending')|list|length }}</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ enhanced_reports|selectattr('report.9', 'equalto', 'resolved')|list|length }}</h3>
+                <p>Resolved</p>
+            </div>
+        </div>
+
+        {% if enhanced_reports %}
+        {% for item in enhanced_reports %}
+        <div class="emergency-card status-{{ item.report[9] }}">
+            <div class="emergency-header">
+                <h3>🚨 Emergency Report #{{ item.report[0] }}</h3>
+                <span class="status-badge status-{{ item.report[9] }}">{{ item.report[9].upper() }}</span>
+            </div>
+            
+            <div class="emergency-grid">
+                <div class="emergency-section">
+                    <h4>👤 Passenger Information</h4>
+                    <p><strong>Name:</strong> {{ item.report[1] }}</p>
+                    <p><strong>Phone:</strong> {{ item.report[2] }}</p>
+                    <p><strong>Emergency Type:</strong> <span class="emergency-type">{{ item.report[6] }}</span></p>
+                    <p><strong>Description:</strong> {{ item.report[7] }}</p>
+                    <p><strong>Reported:</strong> {{ item.report[10] }}</p>
+                </div>
+
+                <div class="emergency-section">
+                    <h4>🚂 Train Details & Location</h4>
+                    <p><strong>Train:</strong> {{ item.train_location.train_name }} ({{ item.report[3] }})</p>
+                    <p><strong>Coach:</strong> {{ item.report[4] }} | <strong>Seat:</strong> {{ item.report[5] }}</p>
+                    <p><strong>Current Position:</strong> {{ item.train_location.latitude|round(4) }}, {{ item.train_location.longitude|round(4) }}</p>
+                    <p><strong>Speed:</strong> {{ item.train_location.speed|round(1) }} km/h</p>
+                    <p><strong>Route:</strong> {{ item.train_location.last_station }} → {{ item.train_location.next_station }}</p>
+                </div>
+
+                <div class="emergency-section">
+                    <h4>🏥 Nearest Medical Stations</h4>
+                    {% for station in item.nearest_stations %}
+                    <div class="station-info">
+                        <p><strong>{{ loop.index }}. {{ station.name }} ({{ station.code }})</strong></p>
+                        <p>📍 Distance: <strong>{{ station.distance_km }} km</strong></p>
+                        <p>📞 Contact: {{ station.contact }}</p>
+                        <p>🏥 Medical: {{ station.medical_facility }}</p>
+                        {% if loop.index == 1 %}
+                        <p class="next-station-alert">⚡ RECOMMENDED: Send medical team here!</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="emergency-actions">
+                <a href="/emergency_map/{{ item.report[0] }}" class="btn" style="background: #007bff;">🗺️ View Live Map</a>
+                {% if item.report[9] == 'pending' %}
+                <a href="/update_status/{{ item.report[0] }}/in_progress" class="btn" style="background: #ffc107;">⏳ Mark In Progress</a>
+                <a href="/update_status/{{ item.report[0] }}/resolved" class="btn" style="background: #28a745;">✅ Mark Resolved</a>
+                {% elif item.report[9] == 'in_progress' %}
+                <a href="/update_status/{{ item.report[0] }}/resolved" class="btn" style="background: #28a745;">✅ Mark Resolved</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-reports">
+            <h3>No Emergency Reports</h3>
+            <p>All clear! No medical emergencies reported.</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <script>
+        // Auto-refresh dashboard every 15 seconds
+        setTimeout(() => {
+            location.reload();
+        }, 15000);
+    </script>
+</body>
+</html>

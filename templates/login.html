@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger Login - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <a href="/" class="site-header__logo">
+                    <div class="site-header__logo-icon">🔐</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">{{ translations.get('railway_emergency_system', 'Railway
+                            Emergency System') }}</h1>
+                        <p class="site-header__logo-subtitle">{{ translations.get('passenger_login', 'Passenger Login')
+                            }}</p>
+                    </div>
+                </a>
+
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link">{{ translations.get('home', 'Home') }}</a>
+                    <a href="/login" class="site-header__nav-link site-header__nav-link--active">{{
+                        translations.get('passenger_login', 'Passenger Login') }}</a>
+                    <a href="/admin_login" class="site-header__nav-link">{{ translations.get('admin_login', 'Admin
+                        Login') }}</a>
+                    <a href="/station_master_login" class="site-header__nav-link">{{
+                        translations.get('station_master_login', 'Station Master') }}</a>
+                    <a href="/signup" class="site-header__nav-link">{{ translations.get('signup', 'Sign Up') }}</a>
+                </nav>
+
+                <div class="site-header__actions">
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language"
+                            aria-expanded="false">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}"
+                                class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <section class="section"
+            style="min-height: 85vh; display: flex; align-items: center; padding: var(--space-10) 0;">
+            <div class="container">
+                <div class="text-center fade-in" style="margin-bottom: var(--space-10);">
+                    <h1 class="text-gradient" style="font-size: 2.5rem; margin-bottom: var(--space-3);">{{
+                        translations.get('login', 'Login') }}</h1>
+                    <p style="color: var(--text-secondary); font-size: 1.125rem;">{{ translations.get('login_to_access',
+                        'Choose your login type to access the system') }}</p>
+                </div>
+
+                <!-- Login Options Grid -->
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-8); max-width: 1100px; margin: 0 auto;">
+
+                    <!-- Passenger Login -->
+                    <div class="card glass-effect fade-in-delay-1"
+                        style="border: 2px solid transparent; background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-origin: border-box; background-clip: padding-box, border-box; transition: all 0.3s ease;">
+                        <div style="text-align: center; margin-bottom: var(--space-6);">
+                            <div
+                                style="width: 100px; height: 100px; margin: 0 auto var(--space-4); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);">
+                                👤
+                            </div>
+                            <h2
+                                style="margin: 0 0 var(--space-2) 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.75rem;">
+                                {{ translations.get('passenger_login', 'Passenger Login') }}</h2>
+                            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">{{
+                                translations.get('passenger_services', 'Access emergency services & dashboard') }}</p>
+                        </div>
+
+                        <form id="passengerLoginForm">
+                            <div class="form-group">
+                                <label for="passenger_username" class="form-label form-label--required">{{
+                                    translations.get('username', 'Username') }}</label>
+                                <input type="text" id="passenger_username" name="username" class="form-control" required
+                                    autocomplete="username"
+                                    placeholder="{{ translations.get('username', 'Enter username') }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="passenger_password" class="form-label form-label--required">{{
+                                    translations.get('password', 'Password') }}</label>
+                                <input type="password" id="passenger_password" name="password" class="form-control"
+                                    required autocomplete="current-password"
+                                    placeholder="{{ translations.get('password', 'Enter password') }}">
+                            </div>
+
+                            <div id="passengerMessage" class="alert"
+                                style="display: none; margin-bottom: var(--space-4);"></div>
+
+                            <button type="submit" class="btn btn--primary btn--large btn--block ripple-effect"
+                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                {{ translations.get('login', 'Login') }}
+                            </button>
+
+                            <p class="text-center"
+                                style="margin-top: var(--space-4); margin-bottom: 0; font-size: 0.875rem; color: var(--text-muted);">
+                                <a href="/signup" class="animated-underline"
+                                    style="font-weight: 600; color: #667eea;">{{ translations.get('signup', 'Sign Up')
+                                    }}</a>
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- Admin Login -->
+                    <div class="card glass-effect fade-in-delay-2"
+                        style="border: 2px solid transparent; background-image: linear-gradient(white, white), linear-gradient(135deg, #f093fb 0%, #f5576c 100%); background-origin: border-box; background-clip: padding-box, border-box; transition: all 0.3s ease;">
+                        <div style="text-align: center; margin-bottom: var(--space-6);">
+                            <div
+                                style="width: 100px; height: 100px; margin: 0 auto var(--space-4); background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);">
+                                🛡️
+                            </div>
+                            <h2
+                                style="margin: 0 0 var(--space-2) 0; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.75rem;">
+                                {{ translations.get('admin_login', 'Admin Login') }}</h2>
+                            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">{{
+                                translations.get('authority_dashboard', 'Railway authority dashboard access') }}</p>
+                        </div>
+
+                        <form id="adminLoginForm">
+                            <div class="form-group">
+                                <label for="admin_username" class="form-label form-label--required">{{
+                                    translations.get('username', 'Admin Username') }}</label>
+                                <input type="text" id="admin_username" name="username" class="form-control" required
+                                    autocomplete="username"
+                                    placeholder="{{ translations.get('username', 'Enter admin username') }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="admin_password" class="form-label form-label--required">{{
+                                    translations.get('password', 'Password') }}</label>
+                                <input type="password" id="admin_password" name="password" class="form-control" required
+                                    autocomplete="current-password"
+                                    placeholder="{{ translations.get('password', 'Enter password') }}">
+                            </div>
+
+                            <div id="adminMessage" class="alert" style="display: none; margin-bottom: var(--space-4);">
+                            </div>
+
+                            <button type="submit" class="btn btn--large btn--block ripple-effect"
+                                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
+                                {{ translations.get('login', 'Login as Admin') }}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Station Master Login -->
+                    <div class="card glass-effect fade-in-delay-3"
+                        style="border: 2px solid transparent; background-image: linear-gradient(white, white), linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); background-origin: border-box; background-clip: padding-box, border-box; transition: all 0.3s ease;">
+                        <div style="text-align: center; margin-bottom: var(--space-6);">
+                            <div
+                                style="width: 100px; height: 100px; margin: 0 auto var(--space-4); background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);">
+                                🚉
+                            </div>
+                            <h2
+                                style="margin: 0 0 var(--space-2) 0; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.75rem;">
+                                {{ translations.get('station_master_login', 'Station Master') }}</h2>
+                            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">{{
+                                translations.get('station_emergency_management', 'Station emergency management') }}</p>
+                        </div>
+
+                        <form id="stationMasterLoginForm">
+                            <div class="form-group">
+                                <label for="station_code" class="form-label form-label--required">{{
+                                    translations.get('station_code', 'Station Code') }}</label>
+                                <input type="text" id="station_code" name="station_code" class="form-control" required
+                                    placeholder="{{ translations.get('station_code', 'Enter station code') }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="station_password" class="form-label form-label--required">{{
+                                    translations.get('password', 'Password') }}</label>
+                                <input type="password" id="station_password" name="password" class="form-control"
+                                    required autocomplete="current-password"
+                                    placeholder="{{ translations.get('password', 'Enter password') }}">
+                            </div>
+
+                            <div id="stationMessage" class="alert"
+                                style="display: none; margin-bottom: var(--space-4);"></div>
+
+                            <button type="submit" class="btn btn--large btn--block ripple-effect"
+                                style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none;">
+                                {{ translations.get('login', 'Login as Station Master') }}
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>Account Services</h3>
+                    <ul>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/signup">Sign Up</a></li>
+                        <li><a href="#">Forgot Password</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Emergency Contacts</h3>
+                    <ul>
+                        <li><a href="tel:139">Railway Emergency: 139</a></li>
+                        <li><a href="tel:112">National Emergency: 112</a></li>
+                        <li><a href="tel:108">Ambulance: 108</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>{{ translations.get('copyright', '&copy; 2024 Railway Medical Emergency Response System. Ministry of
+                    Railways.') }}</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Translations Data -->
+    <script id="translations-data" type="application/json">{{ translations | tojson }}</script>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        // Language Switcher
+        document.getElementById('langBtn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('langDropdown');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            dropdown.classList.toggle('lang-switcher__dropdown--show');
+            this.setAttribute('aria-expanded', !isExpanded);
+        });
+
+        document.addEventListener('click', function (e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('lang-switcher__dropdown--show');
+                langBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Passenger Login
+        document.getElementById('passengerLoginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = { username: formData.get('username'), password: formData.get('password') };
+            const messageDiv = document.getElementById('passengerMessage');
+            messageDiv.style.display = 'none';
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    messageDiv.style.display = 'block';
+                    if (result.success) {
+                        messageDiv.className = 'alert alert--success';
+                        messageDiv.textContent = '✅ ' + result.message + ' Redirecting...';
+                        setTimeout(() => { window.location.href = '/user_dashboard'; }, 1500);
+                    } else {
+                        messageDiv.className = 'alert alert--error';
+                        messageDiv.textContent = '❌ ' + result.message;
+                    }
+                })
+                .catch(error => {
+                    messageDiv.style.display = 'block';
+                    messageDiv.className = 'alert alert--error';
+                    messageDiv.textContent = '❌ Login failed. Please try again.';
+                });
+        });
+
+        // Admin Login
+        document.getElementById('adminLoginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = { username: formData.get('username'), password: formData.get('password') };
+            const messageDiv = document.getElementById('adminMessage');
+            messageDiv.style.display = 'none';
+
+            fetch('/admin_login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    messageDiv.style.display = 'block';
+                    if (result.success) {
+                        messageDiv.className = 'alert alert--success';
+                        messageDiv.textContent = '✅ ' + result.message + ' Redirecting...';
+                        setTimeout(() => { window.location.href = '/authority_dashboard'; }, 1500);
+                    } else {
+                        messageDiv.className = 'alert alert--error';
+                        messageDiv.textContent = '❌ ' + result.message;
+                    }
+                })
+                .catch(error => {
+                    messageDiv.style.display = 'block';
+                    messageDiv.className = 'alert alert--error';
+                    messageDiv.textContent = '❌ Login failed. Please try again.';
+                });
+        });
+
+        // Station Master Login
+        document.getElementById('stationMasterLoginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = { station_code: formData.get('station_code'), password: formData.get('password') };
+            const messageDiv = document.getElementById('stationMessage');
+            messageDiv.style.display = 'none';
+
+            fetch('/station_master_login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    messageDiv.style.display = 'block';
+                    if (result.success) {
+                        messageDiv.className = 'alert alert--success';
+                        messageDiv.textContent = '✅ ' + result.message + ' Redirecting...';
+                        setTimeout(() => { window.location.href = '/station_master_dashboard'; }, 1500);
+                    } else {
+                        messageDiv.className = 'alert alert--error';
+                        messageDiv.textContent = '❌ ' + result.message;
+                    }
+                })
+                .catch(error => {
+                    messageDiv.style.display = 'block';
+                    messageDiv.className = 'alert alert--error';
+                    messageDiv.textContent = '❌ Login failed. Please try again.';
+                });
+        });
+    </script>
+</body>
+
+</html>

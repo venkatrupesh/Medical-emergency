@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowd Monitor - TrainCare Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .cm-hero {
+            background: var(--gradient-hero);
+            padding: 3rem 0 2rem;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cm-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 60%);
+        }
+        .cm-hero h1 { color: white; font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; }
+        .cm-hero p { color: rgba(255,255,255,0.85); font-size: 1rem; margin: 0; }
+
+        .cm-search-bar {
+            max-width: 600px;
+            margin: 1.5rem auto 0;
+            display: flex;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .cm-search-bar input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: var(--radius-lg);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(8px);
+            font-weight: 600;
+        }
+        .cm-search-bar input::placeholder { color: rgba(255,255,255,0.6); }
+        .cm-search-bar input:focus { border-color: white; background: rgba(255,255,255,0.22); box-shadow: 0 0 0 4px rgba(255,255,255,0.1); }
+        .cm-search-btn {
+            padding: 14px 28px;
+            background: white;
+            color: var(--primary-dark);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .cm-search-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+
+        .cm-content { padding: 2rem 0 3rem; }
+
+        /* Train diagram */
+        .cm-train-diagram {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+        .cm-train-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .cm-train-name { font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+        .cm-train-number { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        .cm-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .cm-badge--sim { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .cm-badge--live { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+        .cm-train-visual {
+            display: flex;
+            align-items: stretch;
+            gap: 4px;
+            padding: 12px 0;
+            min-width: max-content;
+        }
+        .cm-loco {
+            width: 60px;
+            height: 52px;
+            background: var(--gradient-dark);
+            border-radius: 8px 20px 20px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .cm-loco::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 8px;
+            background: #64748b;
+            border-radius: 0 3px 3px 0;
+        }
+        .cm-coach-block {
+            min-width: 60px;
+            height: 52px;
+            border-radius: 6px;
+            border: 2px solid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .cm-coach-block:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .cm-coach-block .label { font-size: 0.65rem; font-weight: 800; color: inherit; }
+        .cm-coach-block .pct { font-size: 0.75rem; font-weight: 900; }
+        .cm-coach-green { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+        .cm-coach-yellow { background: #fef9c3; border-color: #fde047; color: #854d0e; }
+        .cm-coach-orange { background: #fed7aa; border-color: #fb923c; color: #9a3412; }
+        .cm-coach-red { background: #fecaca; border-color: #f87171; color: #991b1b; }
+
+        .cm-legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .cm-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--text-muted); }
+        .cm-legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+        /* Stats bar */
+        .cm-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .cm-stat-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .cm-stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .cm-stat-value { font-size: 1.75rem; font-weight: 900; color: var(--primary); margin-bottom: 2px; }
+        .cm-stat-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+
+        /* Coach detail cards */
+        .cm-coach-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .cm-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            animation: cmFadeIn 0.4s ease both;
+        }
+        .cm-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-100); }
+        @keyframes cmFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        .cm-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .cm-card-coach { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); }
+        .cm-card-type {
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+            padding: 3px 10px; border-radius: var(--radius-full);
+            background: var(--primary-bg); color: var(--primary-dark);
+        }
+        .cm-card-type.gen { background: #fef3c7; color: #92400e; }
+        .cm-card-type.sl { background: #dbeafe; color: #1e40af; }
+        .cm-card-type.ac3 { background: #d1fae5; color: #065f46; }
+        .cm-card-type.ac2 { background: #ede9fe; color: #5b21b6; }
+
+        .cm-progress-wrap { margin: 8px 0; }
+        .cm-progress-bg { height: 10px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+        .cm-progress-bar {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 1s cubic-bezier(.4,0,.2,1);
+            width: 0;
+        }
+        .cm-progress-bar.green { background: linear-gradient(90deg, #34d399, #10b981); }
+        .cm-progress-bar.yellow { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        .cm-progress-bar.orange { background: linear-gradient(90deg, #fb923c, #f97316); }
+        .cm-progress-bar.red { background: linear-gradient(90deg, #f87171, #ef4444); }
+
+        .cm-card-details { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
+        .cm-card-details strong { color: var(--text-primary); }
+
+        /* Comfort meter */
+        .cm-comfort {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .cm-comfort h3 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+        .cm-comfort-ring {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            position: relative;
+        }
+        .cm-comfort-ring::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 8px solid #f1f5f9;
+        }
+        .cm-comfort-ring::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 8px solid transparent;
+            border-top-color: var(--ring-color, var(--primary));
+            border-right-color: var(--ring-color, var(--primary));
+            transform: rotate(var(--ring-angle, 0deg));
+            transition: transform 1.5s cubic-bezier(.4,0,.2,1);
+        }
+        .cm-comfort-label { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
+
+        /* Empty + Loading */
+        .cm-empty {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--text-muted);
+        }
+        .cm-empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .cm-loading { display: none; text-align: center; padding: 2rem; }
+        .cm-spinner {
+            width: 40px; height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: cmSpin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes cmSpin { to { transform: rotate(360deg); } }
+
+        .cm-error-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--error);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 24px rgba(239,68,68,0.3);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .cm-error-toast.show { transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 600px) {
+            .cm-search-bar { flex-direction: column; }
+            .cm-stats { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <a href="/" class="site-header__logo">
+                    <div class="site-header__logo-icon">🚑</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">TrainCare Connect</h1>
+                        <p class="site-header__logo-subtitle">Passenger Safety & Emergency Support</p>
+                    </div>
+                </a>
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link">Home</a>
+                    <a href="/features" class="site-header__nav-link">Services</a>
+                    <a href="/train_search" class="site-header__nav-link">Train Search</a>
+                    <a href="/crowd_monitor" class="site-header__nav-link site-header__nav-link--active">Crowd Monitor</a>
+                    <a href="/medical_bot" class="site-header__nav-link">Medical Bot</a>
+                    <a href="/emergency" class="site-header__nav-link">Emergency</a>
+                </nav>
+                <div class="site-header__actions">
+                    <a href="/login" class="btn btn--secondary" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">Login</a>
+                    <a href="/admin_login" class="btn btn--secondary" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">Admin</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero search -->
+    <section class="cm-hero">
+        <div class="container">
+            <h1>🚆 Live Crowd Monitor</h1>
+            <p>Check real-time coach occupancy and find the best seat</p>
+            <div class="cm-search-bar">
+                <input id="trainInput" type="text" placeholder="Enter train number (e.g. 12301)" autocomplete="off" />
+                <button class="cm-search-btn" onclick="fetchCrowd()">Check Occupancy</button>
+            </div>
+        </div>
+    </section>
+
+    <main class="cm-content">
+        <div class="container">
+            <!-- Loading -->
+            <div class="cm-loading" id="cmLoading">
+                <div class="cm-spinner"></div>
+                <p style="color: var(--text-muted); font-weight: 600;">Fetching crowd data...</p>
+            </div>
+
+            <!-- Empty state -->
+            <div class="cm-empty" id="cmEmpty">
+                <div class="cm-empty-icon">🔍</div>
+                <h3>Enter a Train Number</h3>
+                <p>Search for any train to see coach-wise occupancy, seat availability, and comfort scores.</p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+                    <button class="btn btn--secondary btn-sm" onclick="quickSearch('12301')">12301 - Rajdhani</button>
+                    <button class="btn btn--secondary btn-sm" onclick="quickSearch('12951')">12951 - Mumbai Raj</button>
+                    <button class="btn btn--secondary btn-sm" onclick="quickSearch('12259')">12259 - Duronto</button>
+                    <button class="btn btn--secondary btn-sm" onclick="quickSearch('12627')">12627 - Karnataka Exp</button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="cmResults" style="display: none;">
+                <!-- Stats cards -->
+                <div class="cm-stats" id="cmStats"></div>
+
+                <!-- Train diagram -->
+                <div class="cm-train-diagram">
+                    <div class="cm-train-header">
+                        <div>
+                            <h2 class="cm-train-name" id="trainName">—</h2>
+                            <span class="cm-train-number" id="trainNum"></span>
+                        </div>
+                        <span class="cm-badge cm-badge--sim" id="sourceBadge">⚡ Simulated</span>
+                    </div>
+                    <div class="cm-train-visual" id="trainVisual"></div>
+                    <div class="cm-legend">
+                        <div class="cm-legend-item"><div class="cm-legend-dot" style="background:#34d399;"></div> Low (0-40%)</div>
+                        <div class="cm-legend-item"><div class="cm-legend-dot" style="background:#fbbf24;"></div> Medium (41-65%)</div>
+                        <div class="cm-legend-item"><div class="cm-legend-dot" style="background:#fb923c;"></div> High (66-85%)</div>
+                        <div class="cm-legend-item"><div class="cm-legend-dot" style="background:#f87171;"></div> Very High (86-100%)</div>
+                    </div>
+                </div>
+
+                <!-- Coach detail cards -->
+                <h3 style="margin: 1.25rem 0 0.75rem; font-weight: 800;">Coach Details</h3>
+                <div class="cm-coach-grid" id="coachGrid"></div>
+
+                <!-- Comfort score -->
+                <div class="cm-comfort" id="comfortSection">
+                    <h3>Overall Comfort Score</h3>
+                    <div class="cm-comfort-ring" id="comfortRing">
+                        <span id="comfortValue">—</span>
+                    </div>
+                    <div class="cm-comfort-label" id="comfortLabel">Search a train to see comfort score</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>TrainCare Connect</h3>
+                    <p>Crowd monitor shows simulated data for demonstration.</p>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/features">Services</a></li>
+                        <li><a href="/medical_bot">Medical Bot</a></li>
+                        <li><a href="/emergency">Emergency</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Emergency</h3>
+                    <ul>
+                        <li><a href="tel:139">Railway Helpline: 139</a></li>
+                        <li><a href="tel:112">National Emergency: 112</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>&copy; 2024 TrainCare Connect. Railway Medical Emergency Response System.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Error toast -->
+    <div class="cm-error-toast" id="cmToast"></div>
+
+    <script>
+        function quickSearch(num) {
+            document.getElementById('trainInput').value = num;
+            fetchCrowd();
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('cmToast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        function occColor(pct) {
+            if (pct <= 40) return 'green';
+            if (pct <= 65) return 'yellow';
+            if (pct <= 85) return 'orange';
+            return 'red';
+        }
+
+        function coachBlockClass(pct) {
+            return 'cm-coach-' + occColor(pct);
+        }
+
+        function typeClass(type) {
+            const m = { 'GEN': 'gen', 'SL': 'sl', '3A': 'ac3', '2A': 'ac2', '1A': 'ac2' };
+            return m[type] || '';
+        }
+
+        async function fetchCrowd() {
+            const train = document.getElementById('trainInput').value.trim();
+            if (!train) { showToast('Please enter a train number.'); return; }
+
+            document.getElementById('cmEmpty').style.display = 'none';
+            document.getElementById('cmResults').style.display = 'none';
+            document.getElementById('cmLoading').style.display = 'block';
+
+            try {
+                const res = await fetch(`/api/crowd_data/${encodeURIComponent(train)}`);
+                const data = await res.json();
+
+                document.getElementById('cmLoading').style.display = 'none';
+
+                if (!data.success) {
+                    showToast(data.message || 'Crowd data unavailable.');
+                    document.getElementById('cmEmpty').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('cmResults').style.display = 'block';
+
+                // Train header
+                document.getElementById('trainName').textContent = data.train_name || `Train ${train}`;
+                document.getElementById('trainNum').textContent = `#${data.train} • Last updated: ${new Date(data.last_updated).toLocaleTimeString()}`;
+
+                const badge = document.getElementById('sourceBadge');
+                if (data.source === 'simulation') {
+                    badge.className = 'cm-badge cm-badge--sim';
+                    badge.textContent = '⚡ Simulated Data';
+                } else {
+                    badge.className = 'cm-badge cm-badge--live';
+                    badge.textContent = '🟢 Live Data';
+                }
+
+                const coaches = data.coaches || [];
+                const totalCap = coaches.reduce((s, c) => s + (c.capacity || 0), 0);
+                const totalAvail = coaches.reduce((s, c) => s + (c.seats_available || 0), 0);
+                const avgOcc = coaches.length ? Math.round(coaches.reduce((s, c) => s + c.occupancy, 0) / coaches.length) : 0;
+                const busiest = coaches.reduce((best, c) => c.occupancy > (best?.occupancy || 0) ? c : best, null);
+                const emptiest = coaches.reduce((best, c) => c.occupancy < (best?.occupancy || 100) ? c : best, null);
+
+                // Stats
+                const statsHtml = `
+                    <div class="cm-stat-card"><div class="cm-stat-value">${coaches.length}</div><div class="cm-stat-label">Total Coaches</div></div>
+                    <div class="cm-stat-card"><div class="cm-stat-value">${totalCap}</div><div class="cm-stat-label">Total Capacity</div></div>
+                    <div class="cm-stat-card"><div class="cm-stat-value">${totalAvail}</div><div class="cm-stat-label">Seats Available</div></div>
+                    <div class="cm-stat-card"><div class="cm-stat-value" style="color: ${avgOcc > 75 ? 'var(--error)' : avgOcc > 50 ? 'var(--warning)' : 'var(--success)'}">${avgOcc}%</div><div class="cm-stat-label">Avg Occupancy</div></div>
+                    <div class="cm-stat-card"><div class="cm-stat-value" style="font-size:1.3rem; color: var(--error-dark)">${busiest ? busiest.coach : '—'}</div><div class="cm-stat-label">Busiest Coach</div></div>
+                    <div class="cm-stat-card"><div class="cm-stat-value" style="font-size:1.3rem; color: var(--success-dark)">${emptiest ? emptiest.coach : '—'}</div><div class="cm-stat-label">Most Available</div></div>
+                `;
+                document.getElementById('cmStats').innerHTML = statsHtml;
+
+                // Train visual
+                let vizHtml = '<div class="cm-loco">🚂</div>';
+                coaches.forEach(c => {
+                    vizHtml += `<div class="cm-coach-block ${coachBlockClass(c.occupancy)}" title="${c.coach}: ${c.occupancy}% occupied">
+                        <span class="label">${c.coach}</span>
+                        <span class="pct">${c.occupancy}%</span>
+                    </div>`;
+                });
+                document.getElementById('trainVisual').innerHTML = vizHtml;
+
+                // Coach cards
+                const grid = document.getElementById('coachGrid');
+                grid.innerHTML = '';
+                coaches.forEach((c, i) => {
+                    const color = occColor(c.occupancy);
+                    const el = document.createElement('div');
+                    el.className = 'cm-card';
+                    el.style.animationDelay = `${i * 0.06}s`;
+                    el.innerHTML = `
+                        <div class="cm-card-top">
+                            <span class="cm-card-coach">${c.coach}</span>
+                            <span class="cm-card-type ${typeClass(c.type)}">${c.type}</span>
+                        </div>
+                        <div class="cm-progress-wrap">
+                            <div class="cm-progress-bg">
+                                <div class="cm-progress-bar ${color}" data-width="${c.occupancy}"></div>
+                            </div>
+                        </div>
+                        <div class="cm-card-details">
+                            <span>Occupancy: <strong>${c.occupancy}%</strong></span>
+                            <span>Available: <strong>${c.seats_available}</strong></span>
+                        </div>
+                        <div class="cm-card-details" style="margin-top:4px;">
+                            <span>Capacity: <strong>${c.capacity}</strong></span>
+                            <span style="color: ${color === 'green' ? 'var(--success)' : color === 'red' ? 'var(--error)' : 'var(--warning)'}; font-weight:700">
+                                ${c.occupancy <= 40 ? '✓ Comfortable' : c.occupancy <= 65 ? '◐ Moderate' : c.occupancy <= 85 ? '⚠ Crowded' : '✕ Very Crowded'}
+                            </span>
+                        </div>
+                    `;
+                    grid.appendChild(el);
+                });
+
+                // Animate progress bars
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('.cm-progress-bar[data-width]').forEach(bar => {
+                        bar.style.width = bar.dataset.width + '%';
+                    });
+                });
+
+                // Comfort score
+                const comfort = Math.max(0, Math.min(100, Math.round(100 - avgOcc)));
+                const ring = document.getElementById('comfortRing');
+                const angle = (comfort / 100) * 360;
+                ring.style.setProperty('--ring-angle', `${angle}deg`);
+                ring.style.setProperty('--ring-color', comfort >= 60 ? '#10b981' : comfort >= 35 ? '#f59e0b' : '#ef4444');
+                document.getElementById('comfortValue').textContent = comfort + '/100';
+                document.getElementById('comfortLabel').textContent =
+                    comfort >= 70 ? 'Excellent — Plenty of space available' :
+                    comfort >= 50 ? 'Good — Moderate availability' :
+                    comfort >= 30 ? 'Fair — Getting crowded' : 'Poor — Very crowded train';
+
+            } catch (err) {
+                document.getElementById('cmLoading').style.display = 'none';
+                document.getElementById('cmEmpty').style.display = 'block';
+                showToast('Failed to fetch crowd data. Please try again.');
+            }
+        }
+
+        // Allow enter key
+        document.getElementById('trainInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') fetchCrowd();
+        });
+    </script>
+</body>
+</html>

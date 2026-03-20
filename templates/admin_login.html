@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal Login - Railway Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <div class="site-header__logo">
+                    <div class="site-header__logo-icon">🔐</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">Railway Emergency System</h1>
+                        <p class="site-header__logo-subtitle">Admin Portal - Authorized Personnel Only</p>
+                    </div>
+                </div>
+                
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link">Return to Passenger Site</a>
+                </nav>
+                
+                <div class="site-header__actions">
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language" aria-expanded="false">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" 
+                               class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <section class="section">
+            <div class="container container-narrow">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <div class="card__header">
+                        <h2 style="margin: 0;">Admin Sign-in</h2>
+                        <p style="margin: var(--space-2) 0 0 0; color: var(--text-muted); font-size: 0.875rem;">
+                            Sign in to access emergency reports, live train context and coordination tools.
+                        </p>
+                    </div>
+
+                    <form id="adminLoginForm" class="card__body">
+                        <div id="errorMessage" class="alert" style="display: none; margin-bottom: var(--space-4);"></div>
+
+                        <div class="form-group">
+                            <label for="username" class="form-label form-label--required">Username</label>
+                            <input type="text" id="username" name="username" class="form-control" required autocomplete="username" placeholder="Enter admin username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label form-label--required">Password</label>
+                            <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password" placeholder="Enter admin password">
+                        </div>
+
+                        <div class="card__footer" style="margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--gray-200);">
+                            <button type="submit" class="btn btn--primary btn--large btn--block">
+                                Sign In
+                            </button>
+                            <p class="text-center" style="margin-top: var(--space-4); margin-bottom: 0; font-size: 0.875rem; color: var(--text-muted);">
+                                <a href="/">Return to passenger site</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card" style="margin-top: var(--space-8); max-width: 500px; margin-left: auto; margin-right: auto;">
+                    <div class="card__body">
+                        <h3 style="margin-top: 0; margin-bottom: var(--space-4);">Admin Portal Access</h3>
+                        <p style="font-size: 0.875rem; margin-bottom: var(--space-2);">
+                            <strong>Authorized Personnel Only:</strong> This portal is restricted to railway officials, station managers, and authorized medical response coordinators.
+                        </p>
+                        <p style="font-size: 0.875rem; margin-bottom: 0;">
+                            If you are a passenger looking to report an emergency, please use the <a href="/emergency">Emergency Report Form</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>Admin Portal</h3>
+                    <p>Authorized Personnel Only</p>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/">Passenger Site</a></li>
+                        <li><a href="/emergency">Report Emergency</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>&copy; 2024 Railway Medical Emergency Response System. Ministry of Railways.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Translations Data -->
+    <script id="translations-data" type="application/json">{{ translations | tojson }}</script>
+    
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    <script>
+        // Admin login form submission
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                username: formData.get('username'),
+                password: formData.get('password')
+            };
+            
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'none';
+            
+            fetch('/admin_login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    window.location.href = '/authority_dashboard';
+                } else {
+                    errorDiv.style.display = 'block';
+                    errorDiv.className = 'alert alert--error';
+                    errorDiv.textContent = '❌ ' + result.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorDiv.style.display = 'block';
+                errorDiv.className = 'alert alert--error';
+                errorDiv.textContent = '❌ Login failed. Please try again.';
+            });
+        });
+    </script>
+</body>
+</html>

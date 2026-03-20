@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Availability - TrainCare Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .availability-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .availability-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+        }
+        .availability-result {
+            margin-top: 30px;
+            padding: 30px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            display: none;
+        }
+        .availability-result.show {
+            display: block;
+        }
+        .availability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+        .availability-item {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+        .availability-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .availability-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .availability-value.available {
+            color: var(--success-color);
+        }
+        .availability-value.waiting {
+            color: var(--warning-color);
+        }
+    </style>
+</head>
+<body>
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo-section">
+                    <div class="logo-icon"><i class="fas fa-train"></i></div>
+                    <div class="logo-text">
+                        <h1>TrainCare Connect</h1>
+                        <span>Check Seat Availability</span>
+                    </div>
+                </a>
+                <nav class="main-nav">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/train_booking" class="nav-link">Book Ticket</a>
+                    <a href="/pnr_status" class="nav-link">PNR Status</a>
+                    <a href="/seat_availability" class="nav-link active">Seat Availability</a>
+                </nav>
+                <div class="header-actions">
+                    <div class="language-switcher">
+                        <button class="lang-btn" id="langBtn">
+                            <i class="fas fa-globe"></i>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lang-dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" class="lang-option {% if code == lang %}active{% endif %}">
+                                <span class="lang-flag">{{ lang_info.flag }}</span>
+                                <span class="lang-name">{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="/login" class="btn btn-outline">Login</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="availability-container">
+        <div class="availability-card">
+            <h2 style="margin-bottom: 30px; color: var(--text-primary);">
+                <i class="fas fa-chair" style="color: var(--primary-color); margin-right: 12px;"></i>
+                Check Seat Availability
+            </h2>
+            
+            <form id="availabilityForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-train"></i> Train Number</label>
+                        <input type="text" class="form-control" id="trainNumber" placeholder="Enter train number" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar"></i> Journey Date</label>
+                        <input type="date" class="form-control" id="journeyDate" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> From Station</label>
+                        <input type="text" class="form-control" id="fromStation" placeholder="Source station" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> To Station</label>
+                        <input type="text" class="form-control" id="toStation" placeholder="Destination station" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-users"></i> Class</label>
+                    <select class="form-control" id="class">
+                        <option value="SL">Sleeper (SL)</option>
+                        <option value="3A">AC 3 Tier (3A)</option>
+                        <option value="2A">AC 2 Tier (2A)</option>
+                        <option value="1A">AC First Class (1A)</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i> Check Availability
+                </button>
+            </form>
+            
+            <div id="availabilityResult" class="availability-result">
+                <h3 style="margin-bottom: 20px;">Availability Status</h3>
+                <div class="train-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Train Number</div>
+                        <div class="detail-value" id="resultTrainNumber"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Train Name</div>
+                        <div class="detail-value" id="resultTrainName"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Route</div>
+                        <div class="detail-value" id="resultRoute"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Journey Date</div>
+                        <div class="detail-value" id="resultDate"></div>
+                    </div>
+                </div>
+                
+                <div class="availability-grid">
+                    <div class="availability-item">
+                        <div class="availability-label">Available Seats</div>
+                        <div class="availability-value available" id="availableSeats">0</div>
+                    </div>
+                    <div class="availability-item">
+                        <div class="availability-label">Waiting List</div>
+                        <div class="availability-value waiting" id="waitingList">0</div>
+                    </div>
+                    <div class="availability-item">
+                        <div class="availability-label">RAC</div>
+                        <div class="availability-value waiting" id="rac">0</div>
+                    </div>
+                    <div class="availability-item">
+                        <div class="availability-label">Fare (₹)</div>
+                        <div class="availability-value" id="fare">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('journeyDate').min = new Date().toISOString().split('T')[0];
+        
+        document.getElementById('langBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('langDropdown').classList.toggle('show');
+        });
+        
+        document.addEventListener('click', function(e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        document.getElementById('availabilityForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const trainNumber = document.getElementById('trainNumber').value;
+            const fromStation = document.getElementById('fromStation').value;
+            const toStation = document.getElementById('toStation').value;
+            const date = document.getElementById('journeyDate').value;
+            const classCode = document.getElementById('class').value;
+            
+            const params = new URLSearchParams({
+                train_number: trainNumber,
+                from_station: fromStation,
+                to_station: toStation,
+                date: date,
+                class: classCode
+            });
+            
+            fetch(`/api/check_seat_availability?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayAvailability(data.data);
+                    } else {
+                        alert('Error checking availability. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error checking availability. Please try again.');
+                });
+        });
+        
+        function displayAvailability(data) {
+            document.getElementById('resultTrainNumber').textContent = data.train_number;
+            document.getElementById('resultTrainName').textContent = data.train_name;
+            document.getElementById('resultRoute').textContent = `${data.from_station} → ${data.to_station}`;
+            document.getElementById('resultDate').textContent = data.date;
+            document.getElementById('availableSeats').textContent = data.availability.available;
+            document.getElementById('waitingList').textContent = data.availability.waiting_list;
+            document.getElementById('rac').textContent = data.availability.rac;
+            document.getElementById('fare').textContent = '₹' + data.fare;
+            
+            document.getElementById('availabilityResult').classList.add('show');
+            document.getElementById('availabilityResult').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

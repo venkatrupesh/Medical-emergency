@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fare Enquiry - TrainCare Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fare-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .fare-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+        }
+        .fare-result {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(13, 71, 161, 0.05), rgba(13, 71, 161, 0.02));
+            border-radius: var(--radius-md);
+            display: none;
+        }
+        .fare-result.show {
+            display: block;
+        }
+        .fare-breakdown {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 24px;
+            margin-top: 20px;
+        }
+        .fare-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .fare-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-top: 8px;
+            padding-top: 16px;
+            border-top: 2px solid var(--primary-color);
+        }
+        .fare-label {
+            color: var(--text-secondary);
+        }
+        .fare-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo-section">
+                    <div class="logo-icon"><i class="fas fa-train"></i></div>
+                    <div class="logo-text">
+                        <h1>TrainCare Connect</h1>
+                        <span>Fare Enquiry</span>
+                    </div>
+                </a>
+                <nav class="main-nav">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/train_booking" class="nav-link">Book Ticket</a>
+                    <a href="/pnr_status" class="nav-link">PNR Status</a>
+                    <a href="/fare_enquiry" class="nav-link active">Fare</a>
+                </nav>
+                <div class="header-actions">
+                    <div class="language-switcher">
+                        <button class="lang-btn" id="langBtn">
+                            <i class="fas fa-globe"></i>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lang-dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" class="lang-option {% if code == lang %}active{% endif %}">
+                                <span class="lang-flag">{{ lang_info.flag }}</span>
+                                <span class="lang-name">{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="/login" class="btn btn-outline">Login</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="fare-container">
+        <div class="fare-card">
+            <h2 style="margin-bottom: 30px; color: var(--text-primary);">
+                <i class="fas fa-rupee-sign" style="color: var(--primary-color); margin-right: 12px;"></i>
+                Fare Enquiry
+            </h2>
+            
+            <form id="fareForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-train"></i> Train Number</label>
+                        <input type="text" class="form-control" id="trainNumber" placeholder="Enter train number" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-users"></i> Class</label>
+                        <select class="form-control" id="class">
+                            <option value="SL">Sleeper (SL)</option>
+                            <option value="3A">AC 3 Tier (3A)</option>
+                            <option value="2A">AC 2 Tier (2A)</option>
+                            <option value="1A">AC First Class (1A)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> From Station</label>
+                        <input type="text" class="form-control" id="fromStation" placeholder="Source station" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> To Station</label>
+                        <input type="text" class="form-control" id="toStation" placeholder="Destination station" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-calculator"></i> Calculate Fare
+                </button>
+            </form>
+            
+            <div id="fareResult" class="fare-result">
+                <div class="train-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Train Number</div>
+                        <div class="detail-value" id="resultTrainNumber"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Route</div>
+                        <div class="detail-value" id="resultRoute"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Class</div>
+                        <div class="detail-value" id="resultClass"></div>
+                    </div>
+                </div>
+                
+                <div class="fare-breakdown">
+                    <h3 style="margin-bottom: 16px;">Fare Breakdown</h3>
+                    <div class="fare-row">
+                        <span class="fare-label">Base Fare</span>
+                        <span class="fare-value" id="baseFare">₹0</span>
+                    </div>
+                    <div class="fare-row">
+                        <span class="fare-label">Reservation Charge</span>
+                        <span class="fare-value" id="reservationCharge">₹0</span>
+                    </div>
+                    <div class="fare-row">
+                        <span class="fare-label">Service Tax (5%)</span>
+                        <span class="fare-value" id="serviceTax">₹0</span>
+                    </div>
+                    <div class="fare-row">
+                        <span class="fare-label">Total Fare</span>
+                        <span class="fare-value" id="totalFare">₹0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('langBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('langDropdown').classList.toggle('show');
+        });
+        
+        document.addEventListener('click', function(e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        document.getElementById('fareForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const trainNumber = document.getElementById('trainNumber').value;
+            const fromStation = document.getElementById('fromStation').value;
+            const toStation = document.getElementById('toStation').value;
+            const classCode = document.getElementById('class').value;
+            
+            const params = new URLSearchParams({
+                train_number: trainNumber,
+                from_station: fromStation,
+                to_station: toStation,
+                class: classCode
+            });
+            
+            fetch(`/api/get_fare?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayFare(data.data);
+                    } else {
+                        alert('Error calculating fare. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error calculating fare. Please try again.');
+                });
+        });
+        
+        function displayFare(data) {
+            document.getElementById('resultTrainNumber').textContent = data.train_number;
+            document.getElementById('resultRoute').textContent = `${data.from_station} → ${data.to_station}`;
+            document.getElementById('resultClass').textContent = data.class;
+            document.getElementById('baseFare').textContent = '₹' + data.base_fare;
+            document.getElementById('reservationCharge').textContent = '₹' + data.reservation_charge;
+            document.getElementById('serviceTax').textContent = '₹' + data.service_tax;
+            document.getElementById('totalFare').textContent = '₹' + data.total_fare;
+            
+            document.getElementById('fareResult').classList.add('show');
+            document.getElementById('fareResult').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="page_title">Railway Emergency Medical Response System</title>
+    <meta name="description" content="Emergency medical assistance for railway passengers during train journeys">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="site-header__inner">
+                <div class="site-header__logo">
+                    <div class="site-header__logo-icon">🚑</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">TrainCare Connect</h1>
+                        <p class="site-header__logo-subtitle" data-translate="railway_emergency_system">Railway Emergency System</p>
+                    </div>
+                </div>
+                
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link" data-translate="home">Home</a>
+                    <a href="/emergency" class="site-header__nav-link" data-translate="emergency">Emergency</a>
+                    <a href="/login" class="site-header__nav-link" data-translate="login">Login</a>
+                </nav>
+                
+                <div class="site-header__actions">
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language" aria-expanded="false">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" 
+                               class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="section--hero">
+        <div class="container">
+            <div class="text-center fade-in">
+                <h1 style="font-size: 3rem; margin-bottom: var(--space-6); color: white;">
+                    <span data-translate="page_title">Emergency Medical Assistance for Railway Passengers</span>
+                </h1>
+                <p style="font-size: 1.25rem; max-width: 800px; margin: 0 auto var(--space-8); color: rgba(255,255,255,0.9);" data-translate="page_subtitle">
+                    Quick access to medical help during train journey - Connecting passengers with railway authorities for immediate assistance
+                </p>
+                <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
+                    <a href="/emergency" class="btn btn--danger btn--large">
+                        🚨 <span data-translate="report_emergency">Report Emergency</span>
+                    </a>
+                    <a href="/login" class="btn btn--secondary btn--large" style="background: white; color: var(--primary); border-color: white;">
+                        👤 <span data-translate="login">Login</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Services Section -->
+        <section class="section">
+            <div class="container">
+                <div class="text-center mb-8">
+                    <h2 style="font-size: 2.5rem; margin-bottom: var(--space-4);" data-translate="for_passengers">Who We Serve</h2>
+                    <p style="font-size: 1.125rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                        Comprehensive emergency response system for all railway stakeholders
+                    </p>
+                </div>
+
+                <div class="grid grid--3">
+                    <!-- For Passengers -->
+                    <div class="card fade-in">
+                        <div class="card__header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-3);">👥</div>
+                            <h3 style="color: white; margin: 0;" data-translate="for_passengers">For Passengers</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: var(--space-6);">
+                                Report medical emergencies during your journey and get immediate assistance from railway authorities.
+                            </p>
+                            <ul style="list-style: none; margin-bottom: var(--space-6);">
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>24/7 Emergency Reporting</span>
+                                </li>
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Real-time Location Tracking</span>
+                                </li>
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Nearest Hospital Information</span>
+                                </li>
+                                <li style="display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Multi-language Support</span>
+                                </li>
+                            </ul>
+                            <a href="/emergency" class="btn btn--primary btn--block" data-translate="report_emergency">Report Emergency</a>
+                        </div>
+                    </div>
+
+                    <!-- For Railway Officials -->
+                    <div class="card fade-in" style="animation-delay: 0.1s;">
+                        <div class="card__header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-3);">👔</div>
+                            <h3 style="color: white; margin: 0;" data-translate="for_authorities">For Railway Officials</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: var(--space-6);">
+                                Monitor all emergency reports, coordinate medical response, and track train locations in real-time.
+                            </p>
+                            <ul style="list-style: none; margin-bottom: var(--space-6);">
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Centralized Dashboard</span>
+                                </li>
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Live Train Tracking</span>
+                                </li>
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Medical Response Coordination</span>
+                                </li>
+                                <li style="display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Status Management</span>
+                                </li>
+                            </ul>
+                            <a href="/admin_login" class="btn btn--primary btn--block" data-translate="access_authority">Access Dashboard</a>
+                        </div>
+                    </div>
+
+                    <!-- For Station Masters -->
+                    <div class="card fade-in" style="animation-delay: 0.2s;">
+                        <div class="card__header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none;">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-3);">🚉</div>
+                            <h3 style="color: white; margin: 0;" data-translate="for_station_masters">For Station Masters</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: var(--space-6);">
+                                Monitor emergencies approaching your station and prepare medical teams for immediate response.
+                            </p>
+                            <ul style="list-style: none; margin-bottom: var(--space-6);">
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Station-Specific Reports</span>
+                                </li>
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>ETA Calculations</span>
+                                </li>
+                                <li style="margin-bottom: var(--space-3); display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Medical Team Preparation</span>
+                                </li>
+                                <li style="display: flex; align-items: start; gap: var(--space-2);">
+                                    <span style="color: var(--success); font-size: 1.25rem;">✓</span>
+                                    <span>Local Response Coordination</span>
+                                </li>
+                            </ul>
+                            <a href="/station_master_login" class="btn btn--primary btn--block" data-translate="station_master_login">Station Master Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section" style="background: var(--bg-primary);">
+            <div class="container">
+                <div class="text-center mb-8">
+                    <h2 style="font-size: 2.5rem; margin-bottom: var(--space-4);">System Features</h2>
+                    <p style="font-size: 1.125rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                        Advanced technology for rapid emergency response
+                    </p>
+                </div>
+
+                <div class="grid grid--4">
+                    <div class="card" style="text-align: center;">
+                        <div class="card__body">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-4);">⚡</div>
+                            <h4 style="margin-bottom: var(--space-3);">Instant Alerts</h4>
+                            <p style="color: var(--text-secondary); margin: 0;">Real-time notifications to railway authorities and nearest stations</p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="text-align: center;">
+                        <div class="card__body">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-4);">📍</div>
+                            <h4 style="margin-bottom: var(--space-3);">GPS Tracking</h4>
+                            <p style="color: var(--text-secondary); margin: 0;">Accurate train location tracking for faster response times</p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="text-align: center;">
+                        <div class="card__body">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-4);">🏥</div>
+                            <h4 style="margin-bottom: var(--space-3);">Hospital Network</h4>
+                            <p style="color: var(--text-secondary); margin: 0;">Integrated database of hospitals near railway stations</p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="text-align: center;">
+                        <div class="card__body">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-4);">🌍</div>
+                            <h4 style="margin-bottom: var(--space-3);">Multi-Language</h4>
+                            <p style="color: var(--text-secondary); margin: 0;">Support for 6 Indian languages for wider accessibility</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="container text-center">
+                <h2 style="font-size: 2.5rem; margin-bottom: var(--space-6); color: white;">Ready to Get Started?</h2>
+                <p style="font-size: 1.25rem; margin-bottom: var(--space-8); color: rgba(255,255,255,0.9); max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Join thousands of passengers and railway officials using TrainCare Connect for emergency medical assistance.
+                </p>
+                <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
+                    <a href="/signup" class="btn btn--large" style="background: white; color: var(--primary);">
+                        Create Account
+                    </a>
+                    <a href="/emergency" class="btn btn--danger btn--large">
+                        Report Emergency Now
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>TrainCare Connect</h3>
+                    <p>Emergency medical assistance system for railway passengers across India.</p>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/emergency">Report Emergency</a></li>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/signup">Sign Up</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>For Officials</h3>
+                    <ul>
+                        <li><a href="/admin_login">Admin Dashboard</a></li>
+                        <li><a href="/station_master_login">Station Master Portal</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Contact</h3>
+                    <p>Emergency Helpline: 139<br>
+                    Email: emergency@railway.gov.in</p>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>&copy; 2024 Railway Medical Emergency Response System. Ministry of Railways, Government of India.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/language-support-enhanced.js') }}"></script>
+    
+    <!-- Translations Data -->
+    <script>
+        window.TRANSLATIONS = {{ translations | tojson | safe }};
+        window.CURRENT_LANG = '{{ lang }}';
+        if (typeof initTranslations === 'function') {
+            initTranslations();
+        }
+    </script>
+</body>
+</html>

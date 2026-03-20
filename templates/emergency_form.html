@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Report Form - Railway Medical Assistance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Government Header with Tricolor -->
+    <div class="gov-header"></div>
+    
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-top">
+            <div class="container">
+                <div class="header-top-content">
+                    <div class="header-links">
+                        <a href="#">Skip to main content</a>
+                        <a href="#">Screen Reader Access</a>
+                        <a href="#">Text Size: A- A A+</a>
+                    </div>
+                    <div class="header-links">
+                        <a href="#">हिंदी</a>
+                        <a href="#">Contact Us</a>
+                        <a href="#">Help</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header-main">
+            <div class="container">
+                <div class="header-content">
+                    <div class="emblem"></div>
+                    <div class="title-section">
+                        <h1>Emergency Medical Report</h1>
+                        <div class="subtitle">आपातकालीन चिकित्सा रिपोर्ट</div>
+                        <div class="ministry">Ministry of Railways, Government of India</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="gov-nav">
+        <div class="container">
+            <div class="nav-content">
+                <ul class="nav-menu">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/emergency" class="active">Emergency Report</a></li>
+                    <li><a href="/user_dashboard">Passenger Portal</a></li>
+                    <li><a href="#">Guidelines</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+                <div class="user-portal">
+                    Emergency Form
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="/">Home</a> &gt; <a href="/user_dashboard">Passenger Portal</a> &gt; Emergency Report
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Title -->
+            <div class="page-title">
+                <h2>🚨 Medical Emergency Report Form</h2>
+                <p>Report medical emergencies during train journey for immediate assistance</p>
+            </div>
+
+            <!-- Important Notice -->
+            <div class="stats-section" style="margin-bottom: 30px;">
+                <div class="stats-header">
+                    <h3>⚠️ Important Instructions / महत्वपूर्ण निर्देश</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
+                        <p style="margin: 0; color: #856404; font-weight: bold;">
+                            🚨 For immediate life-threatening emergencies, use the SOS button in <a href="/user_dashboard" style="color: #dc3545;">Passenger Portal</a> or call <strong>139</strong>
+                        </p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <strong>✅ Use this form for:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                                <li>Medical assistance needed</li>
+                                <li>Health issues during journey</li>
+                                <li>Non-critical emergencies</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong>🚨 Use SOS for:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                                <li>Fire in train</li>
+                                <li>Serious accidents</li>
+                                <li>Life-threatening conditions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Form -->
+            <div class="gov-form">
+                <form id="emergencyForm">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h3 style="color: #2c5aa0;">Medical Emergency Details</h3>
+                        <p style="color: #666; font-size: 14px;">Please provide accurate information for quick assistance</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="passenger_name">Passenger Name / यात्री का नाम *</label>
+                        <input type="text" id="passenger_name" name="passenger_name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone">Mobile Number / मोबाइल नंबर *</label>
+                        <input type="tel" id="phone" name="phone" class="form-control" required placeholder="10-digit mobile number">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="train_number">Train Number / ट्रेन नंबर *</label>
+                            <input type="text" id="train_number" name="train_number" class="form-control" required placeholder="e.g., 12797">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="coach">Coach / कोच *</label>
+                            <input type="text" id="coach" name="coach" class="form-control" required placeholder="e.g., S1, B2">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="seat">Seat Number / सीट नंबर *</label>
+                            <input type="text" id="seat" name="seat" class="form-control" required placeholder="e.g., 23, 45">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="emergency_type">Type of Emergency / आपातकाल का प्रकार *</label>
+                        <select id="emergency_type" name="emergency_type" class="form-control" required>
+                            <option value="">Select Emergency Type</option>
+                            <option value="heart_attack">Heart Attack / हृदयाघात</option>
+                            <option value="breathing_difficulty">Breathing Difficulty / सांस लेने में कठिनाई</option>
+                            <option value="severe_pain">Severe Pain / तीव्र दर्द</option>
+                            <option value="unconscious">Unconscious / बेहोशी</option>
+                            <option value="injury">Injury/Accident / चोट/दुर्घटना</option>
+                            <option value="fever">High Fever / तेज बुखार</option>
+                            <option value="other">Other / अन्य</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">Describe the Emergency / आपातकाल का विवरण *</label>
+                        <textarea id="description" name="description" rows="4" class="form-control" required placeholder="Please describe the medical emergency in detail..."></textarea>
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <button type="button" id="getLocation" class="btn-gov-secondary" style="padding: 12px 25px;">
+                            📍 Capture Current Location
+                        </button>
+                        <p id="locationStatus" style="margin-top: 10px; font-size: 13px; color: #666;"></p>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button type="submit" class="btn-gov" style="padding: 15px 40px; font-size: 16px; font-weight: bold;">
+                            🚨 Submit Emergency Report
+                        </button>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #666;">
+                        <p>By submitting this form, you confirm that this is a genuine medical emergency</p>
+                    </div>
+                </form>
+
+                <div id="successMessage" class="stats-section" style="display: none; margin-top: 30px;">
+                    <div class="stats-header">
+                        <h3 style="color: #28a745;">✅ Emergency Report Submitted Successfully</h3>
+                    </div>
+                    <div style="padding: 20px; text-align: center;">
+                        <p style="color: #28a745; font-weight: bold; margin-bottom: 15px;">
+                            Your emergency report has been sent to railway authorities. Medical assistance is being arranged.
+                        </p>
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                            <p><strong>Report ID:</strong> <span id="reportId" style="color: #2c5aa0; font-weight: bold;"></span></p>
+                            <p style="font-size: 13px; margin-top: 10px;">Please keep this Report ID for future reference</p>
+                        </div>
+                        <div id="trackingInfo" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="gov-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Emergency Services</h4>
+                    <ul>
+                        <li><a href="/emergency">Report Emergency</a></li>
+                        <li><a href="/user_dashboard">SOS Alert</a></li>
+                        <li><a href="#">Track Report</a></li>
+                        <li><a href="#">Guidelines</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Emergency Contacts</h4>
+                    <ul>
+                        <li><a href="tel:139">Railway Emergency: 139</a></li>
+                        <li><a href="tel:1072">Medical Emergency: 1072</a></li>
+                        <li><a href="tel:101">Fire Emergency: 101</a></li>
+                        <li><a href="tel:182">RPF Helpline: 182</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help & FAQ</a></li>
+                        <li><a href="#">User Guide</a></li>
+                        <li><a href="#">Feedback</a></li>
+                        <li><a href="#">Technical Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Ministry of Railways, Government of India. All rights reserved.</p>
+                <p>Emergency Medical Assistance System - Ensuring passenger safety</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/emergency.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Medical Emergency Response System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <div class="site-header__inner">
+                <a href="/" class="site-header__logo">
+                    <div class="site-header__logo-icon">🚑</div>
+                    <div class="site-header__logo-text">
+                        <h1 class="site-header__logo-title">Railway Medical Emergency Response</h1>
+                        <p class="site-header__logo-subtitle">Ministry of Railways - Emergency Support System</p>
+                    </div>
+                </a>
+                
+                <nav class="site-header__nav" aria-label="Main navigation">
+                    <a href="/" class="site-header__nav-link site-header__nav-link--active">Home</a>
+                    <a href="/emergency" class="site-header__nav-link">Report Emergency</a>
+                    <a href="/train_search" class="site-header__nav-link">Train Search</a>
+                    <a href="/features" class="site-header__nav-link">Services</a>
+                </nav>
+                
+                <div class="site-header__actions">
+                    <!-- Language Switcher -->
+                    <div class="lang-switcher">
+                        <button class="lang-switcher__button" id="langBtn" aria-label="Select language" aria-expanded="false" aria-haspopup="true">
+                            <span>🌐</span>
+                            <span id="currentLang">{{ languages[lang].name if lang in languages else 'English' }}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="lang-switcher__dropdown" id="langDropdown" role="menu">
+                            {% for code, lang_info in languages.items() %}
+                            <a href="/set_language/{{ code }}?redirect={{ request.path }}" 
+                               class="lang-switcher__option {% if code == lang %}lang-switcher__option--active{% endif %}"
+                               role="menuitem">
+                                <span>{{ lang_info.flag }}</span>
+                                <span>{{ lang_info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <a href="/login" class="btn btn--secondary" style="color: #ffffff; border-color: rgba(255,255,255,0.5);">Login</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <!-- Emergency Action Section -->
+        <section class="section" style="background-color: #fff3cd; border-top: 4px solid var(--color-emergency); border-bottom: 4px solid var(--color-emergency);">
+            <div class="container">
+                <div class="card" style="border: 3px solid var(--color-emergency); max-width: 600px; margin: 0 auto;">
+                    <div class="card__header" style="text-align: center; border-bottom: 2px solid var(--color-emergency);">
+                        <h2 style="color: var(--color-emergency); margin: 0; font-size: 1.75rem;">Medical Emergency?</h2>
+                        <p style="margin-top: 0.5rem; margin-bottom: 0; font-weight: 600;">Need immediate medical assistance on train?</p>
+                    </div>
+                    <div class="card__body" style="text-align: center; padding: 2rem 1.5rem;">
+                        <p style="font-size: 1.125rem; margin-bottom: 1.5rem; color: var(--color-text-primary);">
+                            Report your emergency immediately. Railway authorities will coordinate medical assistance at the nearest station.
+                        </p>
+                        <a href="/emergency" class="btn btn--emergency btn--large btn--block">
+                            Report Medical Emergency
+                        </a>
+                        <p style="margin-top: 1rem; margin-bottom: 0; font-size: 0.875rem; color: var(--color-text-muted);">
+                            <strong>Emergency Helpline:</strong> Call <a href="tel:139" style="font-weight: 700;">139</a> (Railway) or <a href="tel:112" style="font-weight: 700;">112</a> (National Emergency)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Information Section -->
+        <section class="section">
+            <div class="container">
+                <div class="text-center" style="margin-bottom: 2rem;">
+                    <h2>Railway Medical Emergency Response System</h2>
+                    <p style="font-size: 1.125rem; max-width: 800px; margin: 0 auto;">
+                        A dedicated system for reporting medical emergencies during train journeys. 
+                        Station managers and railway officials can coordinate immediate medical assistance.
+                    </p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <!-- For Passengers -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>For Passengers</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: 1rem;">
+                                If you or a fellow passenger needs medical assistance during your train journey:
+                            </p>
+                            <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                                <li style="margin-bottom: 0.5rem;">Click "Report Medical Emergency" above</li>
+                                <li style="margin-bottom: 0.5rem;">Provide train and location details</li>
+                                <li style="margin-bottom: 0.5rem;">Medical team will be arranged at nearest station</li>
+                            </ul>
+                            <a href="/emergency" class="btn btn--primary btn--block">Report Emergency</a>
+                        </div>
+                    </div>
+
+                    <!-- For Railway Officials -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>For Railway Officials</h3>
+                        </div>
+                        <div class="card__body">
+                            <p style="margin-bottom: 1rem;">
+                                Station managers and authorized personnel can access the dashboard to:
+                            </p>
+                            <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                                <li style="margin-bottom: 0.5rem;">View all emergency reports</li>
+                                <li style="margin-bottom: 0.5rem;">Track train locations</li>
+                                <li style="margin-bottom: 0.5rem;">Coordinate medical response</li>
+                            </ul>
+                            <a href="/admin_login" class="btn btn--secondary btn--block">Access Dashboard</a>
+                        </div>
+                    </div>
+
+                    <!-- System Features -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>System Features</h3>
+                        </div>
+                        <div class="card__body">
+                            <ul style="margin-left: 1.5rem; margin-bottom: 0;">
+                                <li style="margin-bottom: 0.5rem;">24/7 Emergency Reporting</li>
+                                <li style="margin-bottom: 0.5rem;">Real-time Train Tracking</li>
+                                <li style="margin-bottom: 0.5rem;">Nearest Station & Hospital Info</li>
+                                <li style="margin-bottom: 0.5rem;">Multi-language Support</li>
+                                <li style="margin-bottom: 0.5rem;">Authorized Dashboard Access</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Links Section -->
+        <section class="section section-alt">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: 1.5rem;">Quick Links</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <a href="/train_search" class="btn btn--outline btn--block">Search Trains</a>
+                    <a href="/train_tracker" class="btn btn--outline btn--block">Track Train</a>
+                    <a href="/crowd_monitor" class="btn btn--outline btn--block">Crowd Monitor</a>
+                    <a href="/features" class="btn btn--outline btn--block">All Services</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Important Information -->
+        <section class="section">
+            <div class="container container-narrow">
+                <div class="alert alert--info">
+                    <h3 style="margin-top: 0; margin-bottom: 0.5rem;">Important Information</h3>
+                    <p style="margin-bottom: 0.5rem;">
+                        <strong>For Life-Threatening Emergencies:</strong> Call emergency helpline <strong>112</strong> or railway helpline <strong>139</strong> immediately. 
+                        Do not rely solely on this system for critical emergencies.
+                    </p>
+                    <p style="margin-bottom: 0;">
+                        This system assists in coordinating medical assistance but does not replace emergency medical services. 
+                        Always call emergency services for immediate life-threatening situations.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="site-footer__inner">
+                <div class="site-footer__section">
+                    <h3>Railway Medical Emergency Response</h3>
+                    <p style="color: rgba(255,255,255,0.9);">
+                        Ministry of Railways<br>
+                        Emergency Support System
+                    </p>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Emergency Contacts</h3>
+                    <ul>
+                        <li><a href="tel:139">Railway Helpline: 139</a></li>
+                        <li><a href="tel:112">National Emergency: 112</a></li>
+                        <li><a href="tel:108">Ambulance: 108</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/emergency">Report Emergency</a></li>
+                        <li><a href="/train_search">Search Trains</a></li>
+                        <li><a href="/admin_login">Admin Login</a></li>
+                        <li><a href="/features">All Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="site-footer__bottom">
+                <p>&copy; 2024 Railway Medical Emergency Response System. Ministry of Railways.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Language Switcher
+        document.getElementById('langBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('langDropdown');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
+            dropdown.classList.toggle('lang-switcher__dropdown--show');
+            this.setAttribute('aria-expanded', !isExpanded);
+        });
+        
+        document.addEventListener('click', function(e) {
+            const langBtn = document.getElementById('langBtn');
+            const dropdown = document.getElementById('langDropdown');
+            
+            if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('lang-switcher__dropdown--show');
+                langBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        // Keyboard navigation for language switcher
+        document.getElementById('langBtn').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    </script>
+</body>
+</html>

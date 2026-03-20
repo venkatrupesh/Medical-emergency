@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Coach Tour - TrainCare Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified_theme.css') }}">
+    <style>
+        .virtual-tour-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .coach-viewer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            color: white;
+        }
+        
+        .coach-3d {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .seat-map {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .seat {
+            aspect-ratio: 1;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .seat.available {
+            background: #51cf66;
+            color: white;
+        }
+        
+        .seat.occupied {
+            background: #ff6b6b;
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .seat.recommended {
+            background: #ffd700;
+            color: #333;
+            animation: pulse 2s infinite;
+        }
+        
+        .seat:hover:not(.occupied) {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .seat-info {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #333;
+        }
+        
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .amenity-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .amenity-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .preference-selector {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            color: #333;
+        }
+        
+        .preference-option {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .preference-option:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+        
+        .preference-option.selected {
+            border-color: #667eea;
+            background: #e7f0ff;
+        }
+        
+        .coach-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .control-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="gov-header"></div>
+    
+    <header class="main-header">
+        <div class="header-main">
+            <div class="container">
+                <div class="header-content">
+                    <div class="emblem"></div>
+                    <div class="title-section">
+                        <h1>🎯 Virtual Coach Tour</h1>
+                        <div class="subtitle">आभासी कोच दौरा</div>
+                        <div class="ministry">Explore Before You Travel</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="gov-nav">
+        <div class="container">
+            <div class="nav-content">
+                <ul class="nav-menu">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/virtual_tour" class="active">Virtual Tour</a></li>
+                    <li><a href="/seat_recommendation">Seat Finder</a></li>
+                    <li><a href="/crowd_monitor">Crowd Monitor</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="virtual-tour-container">
+            <div class="page-title">
+                <h2>🚂 Explore Train Coaches Virtually</h2>
+                <p>See real-time seat availability and get personalized recommendations</p>
+            </div>
+
+            <!-- Coach Selector -->
+            <div class="coach-viewer">
+                <h3 style="margin-top: 0;">Select Coach Type</h3>
+                <div class="coach-controls">
+                    <button class="control-btn active" onclick="selectCoach('AC1')">AC 1st Class</button>
+                    <button class="control-btn" onclick="selectCoach('AC2')">AC 2-Tier</button>
+                    <button class="control-btn" onclick="selectCoach('AC3')">AC 3-Tier</button>
+                    <button class="control-btn" onclick="selectCoach('SL')">Sleeper</button>
+                    <button class="control-btn" onclick="selectCoach('CC')">Chair Car</button>
+                </div>
+
+                <!-- Amenities -->
+                <div class="amenities-grid">
+                    <div class="amenity-item">
+                        <div class="amenity-icon">❄️</div>
+                        <div>AC Available</div>
+                    </div>
+                    <div class="amenity-item">
+                        <div class="amenity-icon">🔌</div>
+                        <div>Charging Points</div>
+                    </div>
+                    <div class="amenity-item">
+                        <div class="amenity-icon">🚽</div>
+                        <div>Clean Washrooms</div>
+                    </div>
+                    <div class="amenity-item">
+                        <div class="amenity-icon">📶</div>
+                        <div>WiFi Available</div>
+                    </div>
+                </div>
+
+                <!-- 3D Coach View -->
+                <div class="coach-3d">
+                    <h3 style="color: #2c5aa0; text-align: center; margin-bottom: 30px;">Coach Layout - Real-time Availability</h3>
+                    <div class="seat-map" id="seatMap">
+                        <!-- Seats will be generated here -->
+                    </div>
+                    
+                    <div class="seat-info">
+                        <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;">
+                            <div><span style="display: inline-block; width: 20px; height: 20px; background: #51cf66; border-radius: 5px;"></span> Available</div>
+                            <div><span style="display: inline-block; width: 20px; height: 20px; background: #ff6b6b; border-radius: 5px;"></span> Occupied</div>
+                            <div><span style="display: inline-block; width: 20px; height: 20px; background: #ffd700; border-radius: 5px;"></span> Recommended</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preference Selector -->
+            <div class="preference-selector">
+                <h3 style="color: #2c5aa0; margin-bottom: 20px;">🎯 Get Personalized Seat Recommendations</h3>
+                <p style="color: #666; margin-bottom: 20px;">Select your preferences and we'll recommend the best seats for you</p>
+                
+                <div class="preference-option" onclick="togglePreference(this, 'window')">
+                    <input type="checkbox" id="window">
+                    <div>
+                        <strong>🪟 Window Seat</strong>
+                        <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">Enjoy scenic views during your journey</p>
+                    </div>
+                </div>
+                
+                <div class="preference-option" onclick="togglePreference(this, 'lower')">
+                    <input type="checkbox" id="lower">
+                    <div>
+                        <strong>⬇️ Lower Berth</strong>
+                        <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">Easy access, no climbing required</p>
+                    </div>
+                </div>
+                
+                <div class="preference-option" onclick="togglePreference(this, 'quiet')">
+                    <input type="checkbox" id="quiet">
+                    <div>
+                        <strong>🤫 Quiet Zone</strong>
+                        <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">Away from doors and washrooms</p>
+                    </div>
+                </div>
+                
+                <div class="preference-option" onclick="togglePreference(this, 'charging')">
+                    <input type="checkbox" id="charging">
+                    <div>
+                        <strong>🔌 Near Charging Point</strong>
+                        <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">Keep your devices powered</p>
+                    </div>
+                </div>
+                
+                <button onclick="findRecommendedSeats()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px;">
+                    Find My Perfect Seat 🎯
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="gov-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 TrainCare Connect - Virtual Coach Tour Feature</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function generateSeats() {
+            const seatMap = document.getElementById('seatMap');
+            seatMap.innerHTML = '';
+            
+            for (let i = 1; i <= 72; i++) {
+                const seat = document.createElement('div');
+                const isOccupied = Math.random() > 0.6;
+                seat.className = `seat ${isOccupied ? 'occupied' : 'available'}`;
+                seat.textContent = i;
+                seat.onclick = () => selectSeat(i, isOccupied);
+                seatMap.appendChild(seat);
+            }
+        }
+        
+        function selectSeat(number, isOccupied) {
+            if (isOccupied) {
+                alert('❌ This seat is already occupied. Please select another seat.');
+            } else {
+                alert(`✅ Seat ${number} selected!| tojson | safe}}n| tojson | safe}}nFeatures:| tojson | safe}}n• Window Seat| tojson | safe}}n• Near Charging Point| tojson | safe}}n• Quiet Zone| tojson | safe}}n• Lower Berth| tojson | safe}}n| tojson | safe}}nComfort Score: ⭐⭐⭐⭐⭐`);
+            }
+        }
+        
+        function selectCoach(type) {
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            generateSeats();
+        }
+        
+        function togglePreference(element, id) {
+            element.classList.toggle('selected');
+            document.getElementById(id).checked = !document.getElementById(id).checked;
+        }
+        
+        function findRecommendedSeats() {
+            const seats = document.querySelectorAll('.seat.available');
+            const recommended = Array.from(seats).slice(0, 5);
+            
+            document.querySelectorAll('.seat').forEach(s => s.classList.remove('recommended'));
+            recommended.forEach(seat => seat.classList.add('recommended'));
+            
+            alert('✨ Found 5 perfect seats for you!| tojson | safe}}n| tojson | safe}}nGolden highlighted seats match your preferences:| tojson | safe}}n• Window view| tojson | safe}}n• Lower berth| tojson | safe}}n• Quiet zone| tojson | safe}}n• Near charging point| tojson | safe}}n| tojson | safe}}nClick on any golden seat to book!');
+        }
+        
+        generateSeats();
+    </script>
+</body>
+</html>
